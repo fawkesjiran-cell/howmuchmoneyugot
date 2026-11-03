@@ -10,6 +10,7 @@
 
 - **收入换算**：填写普通月薪、每月工作日、每日工时、加班时薪，自动换算成每秒 / 每分钟 / 每小时收入。
 - **实时累计**：正常上班与加班分别累计，金额精确到分，费率随当前处于正常或加班状态自动切换。
+- **加班火焰特效**：进入加班模式后，跳动的本次金额被动态火焰与余烬包围，并轻微脉动；普通上班状态保持干净的数字样式。
 - **记录不丢失**：下班或收工后再次上班，上一次收入会自动归入“总计”；本次从零重新累计，但总计和菜单栏金额不会回落。
 - **完整打卡流程**：紧凑操作条中的上班、下班、加班、收工四个动作，覆盖一天的工作节奏。
 - **菜单栏小组件**：右上角常驻显示持久化的累计总计，图标与符号跟随货币切换；左键打开面板，右键可快速重置本次或退出。
@@ -28,9 +29,13 @@
 
 ![深色](docs/dashboard-dark.png)
 
+加班火焰模式：
+
+![加班火焰](docs/overtime-light.png)
+
 ## 安装与运行
 
-要求：macOS 13 或更高版本；只需安装 Xcode Command Line Tools，不依赖第三方库。
+要求：macOS 13 或更高版本；只需安装 Xcode Command Line Tools。粒子效果使用项目内置的 MIT 开源库 Vortex，构建无需联网。
 
 ```bash
 git clone https://github.com/fawkesjiran-cell/howmuchmoneyugot.git
@@ -84,7 +89,12 @@ Tests/
   CoreChecks/     无 XCTest 依赖的核心逻辑检查
 Resources/        Info.plist、应用图标
 Scripts/          图标生成、打包、核心检查
+Vendor/Vortex/    本地内置的 MIT 开源 SwiftUI 粒子引擎
 ```
+
+## 第三方
+
+加班火焰由 [Vortex](https://github.com/twostraws/Vortex) 驱动，MIT License，版权归 Paul Hudson 所有。项目内已内置对应源码与许可证说明，构建不依赖网络；完整许可见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
 
 ## 开发
 

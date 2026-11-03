@@ -10,6 +10,9 @@ let package = Package(
     products: [
         .executable(name: "HowMuch", targets: ["HowMuchApp"])
     ],
+    dependencies: [
+        .package(path: "Vendor/Vortex")
+    ],
     targets: [
         .target(
             name: "HowMuchCore",
@@ -17,7 +20,10 @@ let package = Package(
         ),
         .executableTarget(
             name: "HowMuchApp",
-            dependencies: ["HowMuchCore"],
+            dependencies: [
+                "HowMuchCore",
+                .product(name: "Vortex", package: "Vortex")
+            ],
             path: "Sources/HowMuchApp"
         ),
         .executableTarget(

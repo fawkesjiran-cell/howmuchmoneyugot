@@ -105,22 +105,21 @@ struct DashboardView: View {
                     Text(model.t(.sessionCurrentLabel))
                         .font(.system(size: 9.5, weight: .semibold, design: .rounded))
                         .tracking(0.6)
-                        .foregroundStyle(Palette.heroMuted)
+                        .foregroundStyle(
+                            showOvertimeRate
+                                ? Color(hex: 0xFFD98A)
+                                : Palette.heroMuted
+                        )
 
                     Spacer(minLength: 4)
                 }
                 .padding(.bottom, 7)
 
-                HStack(alignment: .firstTextBaseline, spacing: 5) {
-                    Text(model.currency.symbol)
-                        .font(.system(size: 21, weight: .semibold, design: .rounded))
-                        .foregroundStyle(Palette.heroText.opacity(0.55))
-                    Text(model.amount(snapshot.total))
-                        .font(.system(size: 42, weight: .bold, design: .rounded).monospacedDigit())
-                        .foregroundStyle(Palette.heroText)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.55)
-                }
+                OvertimeAmount(
+                    symbol: model.currency.symbol,
+                    amount: model.amount(snapshot.total),
+                    isOvertime: showOvertimeRate
+                )
                 .padding(.bottom, 12)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(
@@ -166,7 +165,12 @@ struct DashboardView: View {
         .clipShape(RoundedRectangle(cornerRadius: 23, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 23, style: .continuous)
-                .strokeBorder(Color.white.opacity(0.08), lineWidth: 0.8)
+                .strokeBorder(
+                    showOvertimeRate
+                        ? Color(hex: 0xFFB13B).opacity(0.46)
+                        : Color.white.opacity(0.08),
+                    lineWidth: 0.8
+                )
         )
         .shadow(color: Palette.shadow.opacity(0.5), radius: 15, x: 0, y: 8)
     }
