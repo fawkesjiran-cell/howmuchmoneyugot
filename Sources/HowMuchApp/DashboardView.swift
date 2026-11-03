@@ -72,8 +72,7 @@ struct DashboardView: View {
     // MARK: - Money
 
     private var heroCard: some View {
-        let progress = cardProgress
-        return ZStack {
+        ZStack {
             RoundedRectangle(cornerRadius: 23, style: .continuous)
                 .fill(
                     LinearGradient(
@@ -109,33 +108,8 @@ struct DashboardView: View {
                         .foregroundStyle(Palette.heroMuted)
 
                     Spacer(minLength: 4)
-
-                    HStack(spacing: 4) {
-                        Text(model.t(.totalLabel))
-                            .font(.system(size: 8.5, weight: .medium, design: .rounded))
-                            .foregroundStyle(Palette.heroMuted)
-                        Text(model.money(model.totalEarned))
-                            .font(.system(size: 10.5, weight: .semibold, design: .rounded).monospacedDigit())
-                            .foregroundStyle(Palette.heroText.opacity(0.88))
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.72)
-                    }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(
-                        Capsule()
-                            .fill(Color.white.opacity(0.09))
-                            .overlay(
-                                Capsule()
-                                    .strokeBorder(Color.white.opacity(0.07), lineWidth: 0.7)
-                            )
-                    )
-                    .accessibilityElement(children: .ignore)
-                    .accessibilityLabel(
-                        "\(model.t(.totalLabel)) \(model.money(model.totalEarned))"
-                    )
                 }
-                .padding(.bottom, 6)
+                .padding(.bottom, 7)
 
                 HStack(alignment: .firstTextBaseline, spacing: 5) {
                     Text(model.currency.symbol)
@@ -147,7 +121,7 @@ struct DashboardView: View {
                         .lineLimit(1)
                         .minimumScaleFactor(0.55)
                 }
-                .padding(.bottom, 8)
+                .padding(.bottom, 12)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(
                     "\(model.t(.earnedThisSession)) \(model.money(snapshot.total))"
@@ -155,55 +129,46 @@ struct DashboardView: View {
 
                 HStack(spacing: 8) {
                     Label(Fmt.duration(snapshot.totalSeconds), systemImage: "timer")
+                        .font(.system(size: 9.5, weight: .medium, design: .rounded).monospacedDigit())
+                        .foregroundStyle(Palette.heroMuted)
+
                     Spacer(minLength: 6)
-                    Label(model.money(model.settings.dailyPay), systemImage: "flag.fill")
-                }
-                .font(.system(size: 9.5, weight: .medium, design: .rounded).monospacedDigit())
-                .foregroundStyle(Palette.heroMuted)
-                .padding(.bottom, 12)
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(
-                    "\(model.t(.dailyTarget)) \(model.money(model.settings.dailyPay))"
-                )
 
-                HStack(spacing: 9) {
-                    GeometryReader { proxy in
-                        ZStack(alignment: .leading) {
-                            Capsule()
-                                .fill(Palette.heroText.opacity(0.12))
-                            Capsule()
-                                .fill(
-                                    LinearGradient(
-                                        colors: [Color(hex: 0xE9D8A9), Color(hex: 0xF3C873)],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
-                                )
-                                .frame(width: max(0, proxy.size.width * min(progress, 1)))
-                        }
+                    HStack(spacing: 5) {
+                        Text(model.t(.totalLabel))
+                            .font(.system(size: 8.5, weight: .medium, design: .rounded))
+                            .foregroundStyle(Palette.heroMuted)
+                        Text(model.money(model.totalEarned))
+                            .font(.system(size: 13.5, weight: .semibold, design: .rounded).monospacedDigit())
+                            .foregroundStyle(Palette.heroText.opacity(0.94))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
                     }
-                    .frame(height: 5)
-
-                    Text("\(Int(min(progress, 9.99) * 100))%")
-                        .font(.system(size: 9, weight: .semibold, design: .rounded).monospacedDigit())
-                        .foregroundStyle(Palette.heroText.opacity(0.78))
-                        .frame(width: 32, alignment: .trailing)
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 5)
+                    .background(
+                        Capsule()
+                            .fill(Color.white.opacity(0.09))
+                            .overlay(
+                                Capsule()
+                                    .strokeBorder(Color.white.opacity(0.08), lineWidth: 0.7)
+                            )
+                    )
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(
+                        "\(model.t(.totalLabel)) \(model.money(model.totalEarned))"
+                    )
                 }
             }
             .padding(18)
         }
-        .frame(height: 184)
+        .frame(height: 156)
         .clipShape(RoundedRectangle(cornerRadius: 23, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 23, style: .continuous)
                 .strokeBorder(Color.white.opacity(0.08), lineWidth: 0.8)
         )
         .shadow(color: Palette.shadow.opacity(0.5), radius: 15, x: 0, y: 8)
-    }
-
-    private var cardProgress: Double {
-        guard model.settings.dailyPay > 0 else { return 0 }
-        return max(0, snapshot.total / model.settings.dailyPay)
     }
 
     // MARK: - Rates

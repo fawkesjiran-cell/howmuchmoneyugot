@@ -93,7 +93,8 @@ final class StatusBarController: NSObject, NSPopoverDelegate {
     private func refresh() {
         guard let button = statusItem.button else { return }
         let snapshot = model.snapshot
-        let title = model.money(snapshot.total)
+        let allTimeTotal = model.money(model.totalEarned)
+        let title = allTimeTotal
 
         if lastCurrency != model.currency {
             button.image = statusImage(for: model.currency)
@@ -111,13 +112,13 @@ final class StatusBarController: NSObject, NSPopoverDelegate {
             .statusTooltip,
             AppMetadata.displayName,
             model.phaseTitle(snapshot.phase),
-            model.money(snapshot.total)
+            allTimeTotal
         )
         button.setAccessibilityValue(
             model.t(
                 .statusAccessibilityValue,
                 model.phaseTitle(snapshot.phase),
-                model.money(snapshot.total)
+                allTimeTotal
             )
         )
     }
