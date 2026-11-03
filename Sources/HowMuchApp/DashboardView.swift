@@ -35,21 +35,21 @@ struct DashboardView: View {
             switch confirmation {
             case .restart:
                 return Alert(
-                    title: Text("开始新的一次计薪？"),
-                    message: Text("本次已累计 ¥\(Fmt.money(snapshot.total))，重新打卡会将这笔记录清零。"),
-                    primaryButton: .destructive(Text("重新开始")) {
+                    title: Text(model.t(.restartConfirmTitle)),
+                    message: Text(model.t(.restartConfirmMessage, model.money(snapshot.total))),
+                    primaryButton: .destructive(Text(model.t(.restartAction))) {
                         model.clockIn()
                     },
-                    secondaryButton: .cancel(Text("取消"))
+                    secondaryButton: .cancel(Text(model.t(.cancel)))
                 )
             case .reset:
                 return Alert(
-                    title: Text("重置本次计薪？"),
-                    message: Text("当前累计的 ¥\(Fmt.money(snapshot.total)) 将清零，且无法恢复。"),
-                    primaryButton: .destructive(Text("重置")) {
+                    title: Text(model.t(.resetConfirmTitle)),
+                    message: Text(model.t(.resetConfirmMessage, model.money(snapshot.total))),
+                    primaryButton: .destructive(Text(model.t(.reset))) {
                         model.resetSession()
                     },
-                    secondaryButton: .cancel(Text("取消"))
+                    secondaryButton: .cancel(Text(model.t(.cancel)))
                 )
             }
         }
@@ -59,13 +59,13 @@ struct DashboardView: View {
 
     private var header: some View {
         HStack(spacing: 11) {
-            LogoMark()
+            LogoMark(symbol: model.currency.symbol)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("进账")
+                Text(model.t(.brand))
                     .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundStyle(Palette.ink)
-                Text("看见每一秒的价值")
+                Text(model.t(.tagline))
                     .font(.system(size: 10, weight: .medium, design: .rounded))
                     .foregroundStyle(Palette.secondary)
             }
@@ -84,8 +84,8 @@ struct DashboardView: View {
                     )
             }
             .buttonStyle(PressScaleButtonStyle())
-            .help("收入和工时设置")
-            .accessibilityLabel("设置")
+            .help(model.t(.settings))
+            .accessibilityLabel(model.t(.settings))
         }
         .padding(.horizontal, 18)
         .padding(.top, 16)
@@ -114,27 +114,30 @@ struct DashboardView: View {
                 .fill(Palette.heroText.opacity(0.035))
                 .frame(width: 158, height: 158)
                 .offset(x: 152, y: 76)
-            Text("¥")
+            Text(model.currency.symbol)
                 .font(.system(size: 156, weight: .black, design: .rounded))
                 .foregroundStyle(Color.white.opacity(0.028))
                 .offset(x: 128, y: 64)
 
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
-                    Text("本次已赚")
+                    Text(model.t(.earnedThisSession))
                         .font(.system(size: 11, weight: .semibold, design: .rounded))
                         .tracking(1.0)
                         .foregroundStyle(Palette.heroMuted)
                     Spacer()
-                    LiveBadge(phase: snapshot.phase)
+                    LiveBadge(
+                        phase: snapshot.phase,
+                        label: model.phaseBadgeTitle(snapshot.phase)
+                    )
                 }
                 .padding(.bottom, 9)
 
                 HStack(alignment: .firstTextBaseline, spacing: 5) {
-                    Text("¥")
+                    Text(model.currency.symbol)
                         .font(.system(size: 22, weight: .semibold, design: .rounded))
                         .foregroundStyle(Palette.heroText.opacity(0.55))
-                    Text(Fmt.money(snapshot.total))
+                    Text(model.amount(snapshot.total))
                         .font(.system(size: 43, weight: .bold, design: .rounded).monospacedDigit())
                         .foregroundStyle(Palette.heroText)
                         .lineLimit(1)
@@ -145,15 +148,15 @@ struct DashboardView: View {
                 HStack(spacing: 9) {
                     Label(Fmt.duration(snapshot.totalSeconds), systemImage: "timer")
                     Text("·")
-                    Text("当前 ¥\(Fmt.money(snapshot.activeHourlyRate))/时")
+                    Text(model.t(.currentRateInline, model.money(snapshot.activeHourlyRate)))
                 }
                 .font(.system(size: 10.5, weight: .medium, design: .rounded).monospacedDigit())
                 .foregroundStyle(Palette.heroMuted)
                 .padding(.bottom, 17)
 
                 HStack(spacing: 4) {
-                    Text("日薪目标")
-                    Text("¥\(Fmt.money(model.settings.dailyPay))")
+                    Text(model.t(.dailyTarget))
+                    Text(model.money(model.settings.dailyPay))
                         .foregroundStyle(Palette.heroText.opacity(0.82))
                     Spacer()
                     Text("\(Int(min(progress, 9.99) * 100))%")
@@ -205,13 +208,13 @@ struct DashboardView: View {
     private var rateCard: some View {
         VStack(spacing: 10) {
             HStack {
-                SmallCapsLabel(text: "此刻收入速率")
+                SmallCapsLabel(text: model.t(.currentEarningRate))
                 Spacer()
                 HStack(spacing: 4) {
                     Circle()
                         .fill(showOvertimeRate ? Palette.gold : Palette.normal)
                         .frame(width: 5, height: 5)
-                    Text(showOvertimeRate ? "加班费率" : "正常费率")
+                    Text(showOvertimeRate ? model.t(.overtimeRate) : model.t(.regularRate))
                         .font(.system(size: 9, weight: .semibold, design: .rounded))
                         .foregroundStyle(showOvertimeRate ? Palette.goldDeep : Palette.normal)
                 }
@@ -225,20 +228,23 @@ struct DashboardView: View {
 
             HStack(spacing: 0) {
                 RateMetric(
-                    label: "每秒",
-                    value: Fmt.moneyPrecise(snapshot.activePerSecondRate),
+                    label: model.t(.perSecond),
+                    symbol: model.currency.symbol,
+                    value: model.amount(snapshot.activePerSecondRate, precise: true),
                     tint: showOvertimeRate ? Palette.goldDeep : Palette.ink
                 )
                 verticalRule
                 RateMetric(
-                    label: "每分",
-                    value: Fmt.money(snapshot.activePerMinuteRate),
+                    label: model.t(.perMinute),
+                    symbol: model.currency.symbol,
+                    value: model.amount(snapshot.activePerMinuteRate),
                     tint: showOvertimeRate ? Palette.goldDeep : Palette.ink
                 )
                 verticalRule
                 RateMetric(
-                    label: "每小时",
-                    value: Fmt.money(snapshot.activeHourlyRate),
+                    label: model.t(.perHour),
+                    symbol: model.currency.symbol,
+                    value: model.amount(snapshot.activeHourlyRate),
                     tint: showOvertimeRate ? Palette.goldDeep : Palette.ink
                 )
             }
@@ -261,7 +267,7 @@ struct DashboardView: View {
         VStack(spacing: 9) {
             HStack(spacing: 9) {
                 PunchButton(
-                    title: "打卡上班",
+                    title: model.t(.clockIn),
                     icon: "play.fill",
                     style: .green,
                     isEnabled: model.canClockIn
@@ -274,7 +280,7 @@ struct DashboardView: View {
                 }
 
                 PunchButton(
-                    title: "打卡下班",
+                    title: model.t(.clockOut),
                     icon: "stop.fill",
                     style: .ink,
                     isEnabled: model.canClockOut
@@ -285,7 +291,7 @@ struct DashboardView: View {
 
             HStack(spacing: 9) {
                 PunchButton(
-                    title: "开始加班",
+                    title: model.t(.startOvertime),
                     icon: "bolt.fill",
                     style: .gold,
                     isEnabled: model.canStartOvertime
@@ -294,7 +300,7 @@ struct DashboardView: View {
                 }
 
                 PunchButton(
-                    title: "结束加班",
+                    title: model.t(.endOvertime),
                     icon: "checkmark",
                     style: .ink,
                     isEnabled: model.canEndOvertime
@@ -324,28 +330,28 @@ struct DashboardView: View {
     private var timelineCard: some View {
         HStack(spacing: 0) {
             TimelineMetric(
-                label: "上班",
+                label: model.t(.timelineClockIn),
                 value: Fmt.time(model.session.normalStartedAt),
                 isActive: model.session.phase == .working,
                 tint: Palette.normal
             )
             timelineRule
             TimelineMetric(
-                label: "下班",
+                label: model.t(.timelineClockOut),
                 value: Fmt.time(model.session.normalEndedAt),
                 isActive: false,
                 tint: Palette.normal
             )
             timelineRule
             TimelineMetric(
-                label: "加班",
+                label: model.t(.timelineOvertime),
                 value: Fmt.time(model.session.overtimeStartedAt),
                 isActive: model.session.phase == .overtime,
                 tint: Palette.gold
             )
             timelineRule
             TimelineMetric(
-                label: "收工",
+                label: model.t(.timelineDone),
                 value: Fmt.time(model.session.overtimeEndedAt),
                 isActive: false,
                 tint: Palette.gold
@@ -366,9 +372,9 @@ struct DashboardView: View {
 
     private var footer: some View {
         HStack(spacing: 6) {
-            Text("普通 ¥\(Fmt.money(model.settings.normalHourlyRate))/时")
+            Text(model.t(.regularFooter, model.money(model.settings.normalHourlyRate)))
             Text("·")
-            Text("加班 ¥\(Fmt.money(model.settings.overtimePerMinuteRate * 60))/时")
+            Text(model.t(.overtimeFooter, model.money(model.settings.overtimePerMinuteRate * 60)))
             Spacer()
             Button {
                 pendingConfirmation = .reset
@@ -376,7 +382,7 @@ struct DashboardView: View {
                 HStack(spacing: 4) {
                     Image(systemName: "arrow.counterclockwise")
                         .font(.system(size: 8.5, weight: .bold))
-                    Text("重置本次")
+                    Text(model.t(.resetThisSession))
                 }
                 .font(.system(size: 9.5, weight: .medium, design: .rounded))
                 .foregroundStyle(Palette.tertiary)
@@ -396,6 +402,8 @@ struct DashboardView: View {
 // MARK: - Components
 
 struct LogoMark: View {
+    let symbol: String
+
     var body: some View {
         ZStack {
             Circle()
@@ -408,8 +416,8 @@ struct LogoMark: View {
                 )
             Circle()
                 .strokeBorder(Color.white.opacity(0.18), lineWidth: 0.8)
-            Text("¥")
-                .font(.system(size: 18, weight: .bold, design: .rounded))
+            Text(symbol)
+                .font(.system(size: symbol.count > 1 ? 13 : 18, weight: .bold, design: .rounded))
                 .foregroundStyle(Palette.heroText)
                 .offset(y: -0.5)
             Circle()
@@ -424,6 +432,7 @@ struct LogoMark: View {
 
 struct LiveBadge: View {
     let phase: WorkPhase
+    let label: String
     @State private var pulsing = false
 
     private var color: Color {
@@ -432,16 +441,6 @@ struct LiveBadge: View {
         case .overtime: return Color(hex: 0xF5CB7A)
         case .clockedOut, .finished: return Palette.heroText.opacity(0.5)
         case .idle: return Palette.heroText.opacity(0.38)
-        }
-    }
-
-    private var label: String {
-        switch phase {
-        case .idle: return "待开始"
-        case .working: return "计薪中"
-        case .clockedOut: return "已下班"
-        case .overtime: return "加班中"
-        case .finished: return "已完成"
         }
     }
 
@@ -488,6 +487,7 @@ struct LiveBadge: View {
 
 struct RateMetric: View {
     let label: String
+    let symbol: String
     let value: String
     let tint: Color
 
@@ -497,7 +497,7 @@ struct RateMetric: View {
                 .font(.system(size: 9.5, weight: .medium, design: .rounded))
                 .foregroundStyle(Palette.secondary)
             HStack(alignment: .firstTextBaseline, spacing: 1) {
-                Text("¥")
+                Text(symbol)
                     .font(.system(size: 8.5, weight: .semibold, design: .rounded))
                     .foregroundStyle(tint.opacity(0.55))
                 Text(value)

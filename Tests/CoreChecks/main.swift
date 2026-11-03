@@ -225,6 +225,29 @@ do {
     expect(SessionEngine.apply(.reset, to: session, at: start) == .idle)
 }
 
+
+section("language and currency preferences")
+do {
+    expect(AppLanguage.zhHans.nativeName == "简体中文")
+    expect(AppLanguage.english.nativeName == "English")
+    expect(AppLanguage.zhHans.localeIdentifier == "zh_CN")
+    expect(AppLanguage.english.localeIdentifier == "en_US")
+    expect(AppLanguage.systemDefault(preferredLanguages: ["zh-Hans-CN"]) == .zhHans)
+    expect(AppLanguage.systemDefault(preferredLanguages: ["en-US"]) == .english)
+
+    expect(CurrencyUnit.cny.code == "CNY")
+    expect(CurrencyUnit.usd.symbol == "$")
+    expect(CurrencyUnit.jpy.symbol == "JP¥")
+    expect(CurrencyUnit.hkd.symbol == "HK$")
+    expect(CurrencyUnit.eur.name(in: .zhHans) == "欧元")
+    expect(CurrencyUnit.eur.name(in: .english) == "Euro")
+    expect(CurrencyUnit.cny.menuLabel(in: .english) == "Chinese Yuan · CNY")
+
+    let encoded = try? JSONEncoder().encode(CurrencyUnit.sgd)
+    let decoded = encoded.flatMap { try? JSONDecoder().decode(CurrencyUnit.self, from: $0) }
+    expect(decoded == .sgd, "currency should survive Codable round trip")
+}
+
 if failures == 0 {
     print("\n✓ All core checks passed")
     exit(0)

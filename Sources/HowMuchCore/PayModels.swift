@@ -11,16 +11,6 @@ public enum WorkPhase: String, Codable, CaseIterable, Sendable {
     public var isEarning: Bool {
         self == .working || self == .overtime
     }
-
-    public var title: String {
-        switch self {
-        case .idle: return "待打卡"
-        case .working: return "正常计薪中"
-        case .clockedOut: return "已打卡下班"
-        case .overtime: return "加班计薪中"
-        case .finished: return "本次已完成"
-        }
-    }
 }
 
 /// Pay inputs. Rates are derived, never stored, so changing the work schedule

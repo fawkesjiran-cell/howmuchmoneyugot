@@ -1,79 +1,110 @@
 import Foundation
+import HowMuchCore
 
 enum Fmt {
-    private static let grouped: NumberFormatter = {
+    private static func makeFormatter(
+        locale: String,
+        minimumFractionDigits: Int,
+        maximumFractionDigits: Int,
+        grouping: Bool
+    ) -> NumberFormatter {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
-        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.locale = Locale(identifier: locale)
+        formatter.usesGroupingSeparator = grouping
         formatter.groupingSeparator = ","
-        formatter.usesGroupingSeparator = true
-        formatter.maximumFractionDigits = 2
-        formatter.minimumFractionDigits = 2
+        formatter.minimumFractionDigits = minimumFractionDigits
+        formatter.maximumFractionDigits = maximumFractionDigits
         return formatter
-    }()
+    }
 
-    private static let plain: NumberFormatter = {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.locale = Locale(identifier: "zh_CN")
-        formatter.maximumFractionDigits = 2
-        formatter.minimumFractionDigits = 2
-        return formatter
-    }()
-
-    private static let precise: NumberFormatter = {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.locale = Locale(identifier: "zh_CN")
-        formatter.maximumFractionDigits = 4
-        formatter.minimumFractionDigits = 4
-        return formatter
-    }()
-
-    private static let integer: NumberFormatter = {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.locale = Locale(identifier: "zh_CN")
-        formatter.maximumFractionDigits = 0
-        return formatter
-    }()
+    private static let groupedZh = makeFormatter(
+        locale: "zh_CN",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+        grouping: true
+    )
+    private static let groupedEn = makeFormatter(
+        locale: "en_US",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+        grouping: true
+    )
+    private static let plainZh = makeFormatter(
+        locale: "zh_CN",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+        grouping: false
+    )
+    private static let plainEn = makeFormatter(
+        locale: "en_US",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+        grouping: false
+    )
+    private static let preciseZh = makeFormatter(
+        locale: "zh_CN",
+        minimumFractionDigits: 4,
+        maximumFractionDigits: 4,
+        grouping: true
+    )
+    private static let preciseEn = makeFormatter(
+        locale: "en_US",
+        minimumFractionDigits: 4,
+        maximumFractionDigits: 4,
+        grouping: true
+    )
+    private static let integerZh = makeFormatter(
+        locale: "zh_CN",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+        grouping: true
+    )
+    private static let integerEn = makeFormatter(
+        locale: "en_US",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+        grouping: true
+    )
 
     private static let clock: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "HH:mm"
         return formatter
     }()
 
-    private static let day: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
-        formatter.dateFormat = "M月d日 EEEE"
-        return formatter
-    }()
-
-    static func money(_ value: Double, grouped useGrouping: Bool = true) -> String {
+    static func amount(
+        _ value: Double,
+        language: AppLanguage,
+        grouped: Bool = true
+    ) -> String {
         let safe = value.isFinite ? max(0, value) : 0
-        return (useGrouping ? grouped : plain).string(from: NSNumber(value: safe)) ?? "0.00"
+        let formatter: NumberFormatter
+        switch (language, grouped) {
+        case (.zhHans, true): formatter = groupedZh
+        case (.zhHans, false): formatter = plainZh
+        case (.english, true): formatter = groupedEn
+        case (.english, false): formatter = plainEn
+        }
+        return formatter.string(from: NSNumber(value: safe)) ?? "0.00"
     }
 
-    static func moneyPrecise(_ value: Double) -> String {
+    static func preciseAmount(_ value: Double, language: AppLanguage) -> String {
         let safe = value.isFinite ? max(0, value) : 0
-        return precise.string(from: NSNumber(value: safe)) ?? "0.0000"
+        let formatter = language == .zhHans ? preciseZh : preciseEn
+        return formatter.string(from: NSNumber(value: safe)) ?? "0.0000"
     }
 
-    static func count(_ value: Double) -> String {
+    static func count(_ value: Double, language: AppLanguage) -> String {
         let safe = value.isFinite ? max(0, value) : 0
-        return integer.string(from: NSNumber(value: safe)) ?? "0"
+        let formatter = language == .zhHans ? integerZh : integerEn
+        return formatter.string(from: NSNumber(value: safe)) ?? "0"
     }
 
     static func time(_ date: Date?) -> String {
         guard let date else { return "--:--" }
         return clock.string(from: date)
-    }
-
-    static func dayString(_ date: Date) -> String {
-        day.string(from: date)
     }
 
     static func duration(_ interval: TimeInterval, paddedHours: Bool = true) -> String {
@@ -85,24 +116,8 @@ enum Fmt {
             return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
         }
         if hours > 0 {
-            return String(format: "%d小时%02d分", hours, minutes)
+            return String(format: "%d:%02d:%02d", hours, minutes, seconds)
         }
-        if minutes > 0 {
-            return String(format: "%d分%02d秒", minutes, seconds)
-        }
-        return String(format: "%d秒", seconds)
-    }
-
-    static func compactDuration(_ interval: TimeInterval) -> String {
-        let total = Int(max(0, interval))
-        let hours = total / 3_600
-        let minutes = (total % 3_600) / 60
-        if hours > 0 {
-            return "\(hours)小时\(minutes)分"
-        }
-        if minutes > 0 {
-            return "\(minutes)分"
-        }
-        return "\(total % 60)秒"
+        return String(format: "%02d:%02d", minutes, seconds)
     }
 }

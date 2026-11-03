@@ -7,6 +7,8 @@ final class AppModel: ObservableObject {
     private enum StorageKey {
         static let settings = "jinzhang.paySettings.v1"
         static let session = "jinzhang.workSession.v1"
+        static let language = "jinzhang.language.v1"
+        static let currency = "jinzhang.currency.v1"
         static let hasLaunched = "jinzhang.hasLaunched.v1"
     }
 
@@ -21,6 +23,20 @@ final class AppModel: ObservableObject {
         didSet {
             guard !isHydrating else { return }
             persist(session, key: StorageKey.session)
+        }
+    }
+
+    @Published var language: AppLanguage {
+        didSet {
+            guard !isHydrating else { return }
+            defaults.set(language.rawValue, forKey: StorageKey.language)
+        }
+    }
+
+    @Published var currency: CurrencyUnit {
+        didSet {
+            guard !isHydrating else { return }
+            defaults.set(currency.rawValue, forKey: StorageKey.currency)
         }
     }
 
@@ -42,8 +58,19 @@ final class AppModel: ObservableObject {
         let initialSession: WorkSession =
             Self.load(WorkSession.self, key: StorageKey.session, from: defaults) ?? .idle
 
+        let initialLanguage = defaults
+            .string(forKey: StorageKey.language)
+            .flatMap(AppLanguage.init(rawValue:))
+            ?? AppLanguage.systemDefault()
+        let initialCurrency = defaults
+            .string(forKey: StorageKey.currency)
+            .flatMap(CurrencyUnit.init(rawValue:))
+            ?? .cny
+
         self.settings = initialSettings
         self.session = initialSession
+        self.language = initialLanguage
+        self.currency = initialCurrency
         self.now = Date()
         self.isHydrating = false
 
@@ -82,16 +109,55 @@ final class AppModel: ObservableObject {
 
     var phaseHint: String {
         switch session.phase {
-        case .idle:
-            return "点击「打卡上班」，开始记录今天的收入"
-        case .working:
-            return "正常计薪中，点击「打卡下班」结束本轮"
-        case .clockedOut:
-            return "已下班，可以开始加班，或重新打卡"
-        case .overtime:
-            return "加班计薪中，点击「结束加班」完成本次"
-        case .finished:
-            return "本次已完成，再次上班会开启新记录"
+        case .idle: return t(.phaseHintIdle)
+        case .working: return t(.phaseHintWorking)
+        case .clockedOut: return t(.phaseHintClockedOut)
+        case .overtime: return t(.phaseHintOvertime)
+        case .finished: return t(.phaseHintFinished)
+        }
+    }
+
+    // MARK: - Localization & display
+
+    func t(_ key: LKey, _ arguments: CVarArg...) -> String {
+        L10n.text(key, language: language, arguments: arguments)
+    }
+
+    func amount(
+        _ value: Double,
+        precise: Bool = false,
+        grouped: Bool = true
+    ) -> String {
+        precise
+            ? Fmt.preciseAmount(value, language: language)
+            : Fmt.amount(value, language: language, grouped: grouped)
+    }
+
+    func money(_ value: Double, precise: Bool = false) -> String {
+        currency.symbol + amount(value, precise: precise)
+    }
+
+    func count(_ value: Double) -> String {
+        Fmt.count(value, language: language)
+    }
+
+    func phaseTitle(_ phase: WorkPhase) -> String {
+        switch phase {
+        case .idle: return t(.phaseTitleIdle)
+        case .working: return t(.phaseTitleWorking)
+        case .clockedOut: return t(.phaseTitleClockedOut)
+        case .overtime: return t(.phaseTitleOvertime)
+        case .finished: return t(.phaseTitleFinished)
+        }
+    }
+
+    func phaseBadgeTitle(_ phase: WorkPhase) -> String {
+        switch phase {
+        case .idle: return t(.phaseBadgeIdle)
+        case .working: return t(.phaseBadgeWorking)
+        case .clockedOut: return t(.phaseBadgeClockedOut)
+        case .overtime: return t(.phaseBadgeOvertime)
+        case .finished: return t(.phaseBadgeFinished)
         }
     }
 

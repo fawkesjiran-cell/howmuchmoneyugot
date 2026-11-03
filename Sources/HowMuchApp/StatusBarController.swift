@@ -10,6 +10,7 @@ final class StatusBarController: NSObject, NSPopoverDelegate {
     private let hostingController: NSHostingController<AnyView>
     private var refreshTimer: Timer?
     private var lastTitle: String = ""
+    private var lastCurrency: CurrencyUnit?
 
     init(model: AppModel) {
         self.model = model
@@ -60,20 +61,15 @@ final class StatusBarController: NSObject, NSPopoverDelegate {
     private func configureStatusItem() {
         guard let button = statusItem.button else { return }
 
-        let image = NSImage(
-            systemSymbolName: "yensign.circle.fill",
-            accessibilityDescription: "进账"
-        )
-        image?.isTemplate = true
-        button.image = image
+        button.image = statusImage(for: model.currency)
         button.imagePosition = .imageLeading
         button.imageScaling = .scaleProportionallyDown
         button.font = NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .semibold)
         button.target = self
         button.action = #selector(statusItemClicked(_:))
         button.sendAction(on: [.leftMouseUp, .rightMouseUp])
-        button.setAccessibilityLabel("进账计薪")
-        button.toolTip = "进账 · 点击查看实时收入"
+        button.setAccessibilityLabel(model.t(.statusAccessibilityLabel))
+        button.toolTip = model.t(.brand)
     }
 
     private func configurePopover() {
@@ -97,15 +93,33 @@ final class StatusBarController: NSObject, NSPopoverDelegate {
     private func refresh() {
         guard let button = statusItem.button else { return }
         let snapshot = model.snapshot
-        let title = "¥\(Fmt.money(snapshot.total))"
+        let title = model.money(snapshot.total)
+
+        if lastCurrency != model.currency {
+            button.image = statusImage(for: model.currency)
+            lastCurrency = model.currency
+            lastTitle = ""
+        }
 
         if title != lastTitle {
             button.title = title
             lastTitle = title
         }
 
-        button.toolTip = "进账 · \(snapshot.phase.title) · ¥\(Fmt.money(snapshot.total))"
-        button.setAccessibilityValue("\(snapshot.phase.title)，¥\(Fmt.money(snapshot.total))")
+        button.setAccessibilityLabel(model.t(.statusAccessibilityLabel))
+        button.toolTip = model.t(
+            .statusTooltip,
+            model.t(.brand),
+            model.phaseTitle(snapshot.phase),
+            model.money(snapshot.total)
+        )
+        button.setAccessibilityValue(
+            model.t(
+                .statusAccessibilityValue,
+                model.phaseTitle(snapshot.phase),
+                model.money(snapshot.total)
+            )
+        )
     }
 
     // MARK: - Interaction
@@ -121,20 +135,32 @@ final class StatusBarController: NSObject, NSPopoverDelegate {
     private func showContextMenu(from button: NSStatusBarButton) {
         let menu = NSMenu()
 
-        let openItem = NSMenuItem(title: "打开进账", action: #selector(openPanel), keyEquivalent: "")
+        let openItem = NSMenuItem(
+            title: model.t(.openApp),
+            action: #selector(openPanel),
+            keyEquivalent: ""
+        )
         openItem.target = self
         menu.addItem(openItem)
 
         menu.addItem(.separator())
 
-        let resetItem = NSMenuItem(title: "重置本次计薪…", action: #selector(resetSession), keyEquivalent: "")
+        let resetItem = NSMenuItem(
+            title: model.t(.resetThisSession) + "…",
+            action: #selector(resetSession),
+            keyEquivalent: ""
+        )
         resetItem.target = self
         resetItem.isEnabled = model.session.hasRecordedTime
         menu.addItem(resetItem)
 
         menu.addItem(.separator())
 
-        let quitItem = NSMenuItem(title: "退出进账", action: #selector(quitApp), keyEquivalent: "q")
+        let quitItem = NSMenuItem(
+            title: model.t(.quitApp),
+            action: #selector(quitApp),
+            keyEquivalent: "q"
+        )
         quitItem.target = self
         menu.addItem(quitItem)
 
@@ -151,11 +177,14 @@ final class StatusBarController: NSObject, NSPopoverDelegate {
 
     @objc private func resetSession() {
         let alert = NSAlert()
-        alert.messageText = "重置本次计薪？"
-        alert.informativeText = "当前累计的 ¥\(Fmt.money(model.snapshot.total)) 将清零，且无法恢复。"
+        alert.messageText = model.t(.resetConfirmTitle)
+        alert.informativeText = model.t(
+            .resetConfirmMessage,
+            model.money(model.snapshot.total)
+        )
         alert.alertStyle = .warning
-        alert.addButton(withTitle: "重置")
-        alert.addButton(withTitle: "取消")
+        alert.addButton(withTitle: model.t(.reset))
+        alert.addButton(withTitle: model.t(.cancel))
 
         NSApp.activate(ignoringOtherApps: true)
         if alert.runModal() == .alertFirstButtonReturn {
@@ -166,6 +195,28 @@ final class StatusBarController: NSObject, NSPopoverDelegate {
 
     @objc private func quitApp() {
         NSApp.terminate(nil)
+    }
+
+    private func statusImage(for currency: CurrencyUnit) -> NSImage? {
+        let image = NSImage(
+            systemSymbolName: iconName(for: currency),
+            accessibilityDescription: model.t(.brand)
+        ) ?? NSImage(
+            systemSymbolName: "creditcard.circle.fill",
+            accessibilityDescription: model.t(.brand)
+        )
+        image?.isTemplate = true
+        return image
+    }
+
+    private func iconName(for currency: CurrencyUnit) -> String {
+        switch currency {
+        case .cny, .jpy: return "yensign.circle.fill"
+        case .usd, .hkd, .sgd: return "dollarsign.circle.fill"
+        case .eur: return "eurosign.circle.fill"
+        case .gbp: return "sterlingsign.circle.fill"
+        case .krw: return "wonsign.circle.fill"
+        }
     }
 
     // MARK: - NSPopoverDelegate

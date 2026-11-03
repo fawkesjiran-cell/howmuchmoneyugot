@@ -1,4 +1,5 @@
 import AppKit
+import Combine
 
 @main
 struct JinZhangApp {
@@ -19,12 +20,23 @@ struct JinZhangApp {
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let model = AppModel()
     private var statusBarController: StatusBarController?
+    private var cancellables = Set<AnyCancellable>()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
         installMainMenu()
 
         statusBarController = StatusBarController(model: model)
+
+        model.$language
+            .dropFirst()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                Task { @MainActor in
+                    self?.installMainMenu()
+                }
+            }
+            .store(in: &cancellables)
 
         let arguments = ProcessInfo.processInfo.arguments
         let forceOpen = arguments.contains("--show-panel") || arguments.contains("--showPopover")
@@ -46,9 +58,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let appMenuItem = NSMenuItem()
         mainMenu.addItem(appMenuItem)
-        let appMenu = NSMenu(title: "进账")
+        let appMenu = NSMenu(title: model.t(.brand))
         let showItem = NSMenuItem(
-            title: "显示计薪面板",
+            title: model.t(.showPanel),
             action: #selector(showPanelFromMenu),
             keyEquivalent: "1"
         )
@@ -56,13 +68,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         appMenu.addItem(showItem)
         appMenu.addItem(.separator())
         appMenu.addItem(
-            withTitle: "关于进账",
+            withTitle: model.t(.aboutApp),
             action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)),
             keyEquivalent: ""
         )
         appMenu.addItem(.separator())
         appMenu.addItem(
-            withTitle: "退出进账",
+            withTitle: model.t(.quitApp),
             action: #selector(NSApplication.terminate(_:)),
             keyEquivalent: "q"
         )
@@ -70,14 +82,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let editMenuItem = NSMenuItem()
         mainMenu.addItem(editMenuItem)
-        let editMenu = NSMenu(title: "编辑")
-        editMenu.addItem(withTitle: "撤销", action: #selector(UndoManager.undo), keyEquivalent: "z")
-        editMenu.addItem(withTitle: "重做", action: #selector(UndoManager.redo), keyEquivalent: "Z")
+        let editMenu = NSMenu(title: model.t(.editMenu))
+        editMenu.addItem(withTitle: model.t(.undo), action: #selector(UndoManager.undo), keyEquivalent: "z")
+        editMenu.addItem(withTitle: model.t(.redo), action: #selector(UndoManager.redo), keyEquivalent: "Z")
         editMenu.addItem(.separator())
-        editMenu.addItem(withTitle: "剪切", action: #selector(NSText.cut(_:)), keyEquivalent: "x")
-        editMenu.addItem(withTitle: "复制", action: #selector(NSText.copy(_:)), keyEquivalent: "c")
-        editMenu.addItem(withTitle: "粘贴", action: #selector(NSText.paste(_:)), keyEquivalent: "v")
-        editMenu.addItem(withTitle: "全选", action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
+        editMenu.addItem(withTitle: model.t(.cut), action: #selector(NSText.cut(_:)), keyEquivalent: "x")
+        editMenu.addItem(withTitle: model.t(.copy), action: #selector(NSText.copy(_:)), keyEquivalent: "c")
+        editMenu.addItem(withTitle: model.t(.paste), action: #selector(NSText.paste(_:)), keyEquivalent: "v")
+        editMenu.addItem(withTitle: model.t(.selectAll), action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
         editMenuItem.submenu = editMenu
 
         NSApp.mainMenu = mainMenu

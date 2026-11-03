@@ -45,6 +45,6 @@ struct PopoverView: View {
             }
         }
         .frame(width: 392, height: 608)
-        .environment(\.locale, Locale(identifier: "zh_CN"))
+        .environment(\.locale, Locale(identifier: model.language.localeIdentifier))
     }
 }

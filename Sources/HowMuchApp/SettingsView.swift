@@ -11,8 +11,9 @@ struct SettingsView: View {
         VStack(spacing: 0) {
             header
 
-            ScrollView(.vertical, showsIndicators: false) {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(alignment: .leading, spacing: 16) {
+                    preferencesSection
                     incomeSection
                     rateSection
                     dataSection
@@ -23,13 +24,13 @@ struct SettingsView: View {
                 .padding(.bottom, 18)
             }
         }
-        .alert("重置本次计薪？", isPresented: $showResetAlert) {
-            Button("取消", role: .cancel) {}
-            Button("重置", role: .destructive) {
+        .alert(model.t(.resetConfirmTitle), isPresented: $showResetAlert) {
+            Button(model.t(.cancel), role: .cancel) {}
+            Button(model.t(.reset), role: .destructive) {
                 model.resetSession()
             }
         } message: {
-            Text("当前累计的 ¥\(Fmt.money(model.snapshot.total)) 将清零，且无法恢复。")
+            Text(model.t(.resetConfirmMessage, model.money(model.snapshot.total)))
         }
     }
 
@@ -49,20 +50,20 @@ struct SettingsView: View {
                     )
             }
             .buttonStyle(PressScaleButtonStyle())
-            .help("返回")
+            .help(model.t(.back))
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("收入与工时")
+                Text(model.t(.settingsTitle))
                     .font(.system(size: 16, weight: .bold, design: .rounded))
                     .foregroundStyle(Palette.ink)
-                Text("修改后立即生效")
+                Text(model.t(.settingsSubtitle))
                     .font(.system(size: 10, weight: .medium, design: .rounded))
                     .foregroundStyle(Palette.secondary)
             }
 
             Spacer()
 
-            Button("完成", action: close)
+            Button(model.t(.done), action: close)
                 .font(.system(size: 12, weight: .semibold, design: .rounded))
                 .foregroundStyle(Palette.normal)
                 .buttonStyle(.plain)
@@ -78,58 +79,134 @@ struct SettingsView: View {
         .padding(.bottom, 14)
     }
 
+    // MARK: - Preferences
+
+    private var preferencesSection: some View {
+        VStack(alignment: .leading, spacing: 7) {
+            SmallCapsLabel(text: model.t(.preferences))
+
+            HStack(spacing: 0) {
+                preferenceColumn(
+                    icon: "globe",
+                    title: model.t(.language),
+                    help: model.t(.languageHint)
+                ) {
+                    Picker("", selection: $model.language) {
+                        ForEach(AppLanguage.allCases) { language in
+                            Text(language.nativeName).tag(language)
+                        }
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.menu)
+                    .controlSize(.small)
+                }
+
+                Rectangle()
+                    .fill(Palette.line)
+                    .frame(width: 0.8, height: 44)
+
+                preferenceColumn(
+                    icon: "banknote",
+                    title: model.t(.currency),
+                    help: model.t(.currencyHint)
+                ) {
+                    Picker("", selection: $model.currency) {
+                        ForEach(CurrencyUnit.allCases) { currency in
+                            Text(currency.menuLabel(in: model.language)).tag(currency)
+                        }
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.menu)
+                    .controlSize(.small)
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .cardSurface(cornerRadius: 17)
+
+            Text(model.t(.currencyDisplayOnlyNote))
+                .font(.system(size: 9, weight: .medium, design: .rounded))
+                .foregroundStyle(Palette.tertiary)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 2)
+        }
+    }
+
+    private func preferenceColumn<Content: View>(
+        icon: String,
+        title: String,
+        help: String,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.system(size: 9, weight: .semibold))
+                    .foregroundStyle(Palette.normal)
+                Text(title)
+                    .font(.system(size: 9.5, weight: .semibold, design: .rounded))
+                    .foregroundStyle(Palette.secondary)
+            }
+            content()
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .help(help)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 10)
+    }
+
     // MARK: - Income
 
     private var incomeSection: some View {
         VStack(alignment: .leading, spacing: 7) {
-            SmallCapsLabel(text: "收入输入")
+            SmallCapsLabel(text: model.t(.incomeInputSection))
 
             VStack(spacing: 0) {
                 SettingNumberRow(
                     icon: "banknote.fill",
-                    title: "普通月薪",
-                    caption: "税前或到手均可",
+                    title: model.t(.monthlySalary),
+                    caption: model.t(.monthlySalaryHint),
                     tint: Palette.normal,
                     value: settingBinding(\.monthlySalary),
-                    suffix: "元/月"
+                    suffix: "\(model.currency.code)/\(model.t(.perMonthSuffix))"
                 )
 
                 rowDivider
 
                 SettingNumberRow(
                     icon: "calendar",
-                    title: "每月工作日",
-                    caption: "用于换算普通时薪",
+                    title: model.t(.workdaysPerMonth),
+                    caption: model.t(.workdaysHint),
                     tint: Palette.normal,
                     value: settingBinding(\.workDaysPerMonth),
-                    suffix: "天"
+                    suffix: model.t(.daysSuffix)
                 )
 
                 rowDivider
 
                 SettingNumberRow(
                     icon: "clock.fill",
-                    title: "每日工时",
-                    caption: "正常工作的时长",
+                    title: model.t(.hoursPerDay),
+                    caption: model.t(.hoursHint),
                     tint: Palette.normal,
                     value: settingBinding(\.hoursPerDay),
-                    suffix: "小时"
+                    suffix: model.t(.hoursSuffix)
                 )
 
                 rowDivider
 
                 SettingNumberRow(
                     icon: "bolt.fill",
-                    title: "加班时薪",
-                    caption: "可独立于普通时薪",
+                    title: model.t(.overtimeHourly),
+                    caption: model.t(.overtimeHourlyHint),
                     tint: Palette.gold,
                     value: settingBinding(\.overtimeHourlyRate),
-                    suffix: "元/时"
+                    suffix: "\(model.currency.code)/\(model.t(.perHourSuffix))"
                 )
 
                 HStack {
                     if !model.settings.isValid {
-                        Label("月薪与工时需大于 0", systemImage: "exclamationmark.triangle.fill")
+                        Label(model.t(.invalidIncome), systemImage: "exclamationmark.triangle.fill")
                             .font(.system(size: 9, weight: .medium, design: .rounded))
                             .foregroundStyle(Palette.danger)
                     }
@@ -140,7 +217,12 @@ struct SettingsView: View {
                         HStack(spacing: 4) {
                             Image(systemName: "sparkles")
                                 .font(.system(size: 8.5, weight: .bold))
-                            Text("按 1.5× 填入 ¥\(Fmt.money(model.settings.suggestedOvertimeHourlyRate))")
+                            Text(
+                                model.t(
+                                    .fillSuggestedRate,
+                                    model.money(model.settings.suggestedOvertimeHourlyRate)
+                                )
+                            )
                         }
                         .font(.system(size: 9.5, weight: .semibold, design: .rounded).monospacedDigit())
                         .foregroundStyle(Palette.goldDeep)
@@ -168,13 +250,14 @@ struct SettingsView: View {
 
     private var rateSection: some View {
         VStack(alignment: .leading, spacing: 7) {
-            SmallCapsLabel(text: "换算结果")
+            SmallCapsLabel(text: model.t(.calculatedRates))
 
             VStack(spacing: 11) {
                 HStack(spacing: 0) {
                     RateMetric(
-                        label: "每秒",
-                        value: Fmt.moneyPrecise(model.settings.normalPerSecondRate),
+                        label: model.t(.perSecond),
+                        symbol: model.currency.symbol,
+                        value: model.amount(model.settings.normalPerSecondRate, precise: true),
                         tint: Palette.ink
                     )
                     Rectangle()
@@ -182,8 +265,9 @@ struct SettingsView: View {
                         .frame(width: 0.8, height: 26)
                         .padding(.horizontal, 9)
                     RateMetric(
-                        label: "每分",
-                        value: Fmt.money(model.settings.normalPerMinuteRate),
+                        label: model.t(.perMinute),
+                        symbol: model.currency.symbol,
+                        value: model.amount(model.settings.normalPerMinuteRate),
                         tint: Palette.ink
                     )
                     Rectangle()
@@ -191,8 +275,9 @@ struct SettingsView: View {
                         .frame(width: 0.8, height: 26)
                         .padding(.horizontal, 9)
                     RateMetric(
-                        label: "每小时",
-                        value: Fmt.money(model.settings.normalHourlyRate),
+                        label: model.t(.perHour),
+                        symbol: model.currency.symbol,
+                        value: model.amount(model.settings.normalHourlyRate),
                         tint: Palette.ink
                     )
                 }
@@ -202,17 +287,32 @@ struct SettingsView: View {
                     .frame(height: 0.8)
 
                 HStack(spacing: 8) {
-                    SummaryStat(label: "普通时薪", value: "¥\(Fmt.money(model.settings.normalHourlyRate))")
+                    SummaryStat(
+                        label: model.t(.regularHourly),
+                        value: model.money(model.settings.normalHourlyRate)
+                    )
                     Spacer(minLength: 0)
-                    SummaryStat(label: "加班时薪", value: "¥\(Fmt.money(model.settings.overtimePerMinuteRate * 60))")
+                    SummaryStat(
+                        label: model.t(.overtimeHourly),
+                        value: model.money(model.settings.overtimePerMinuteRate * 60)
+                    )
                     Spacer(minLength: 0)
-                    SummaryStat(label: "日薪目标", value: "¥\(Fmt.money(model.settings.dailyPay))")
+                    SummaryStat(
+                        label: model.t(.dailyTarget),
+                        value: model.money(model.settings.dailyPay)
+                    )
                 }
 
-                Text("按每月 \(Fmt.count(model.settings.workDaysPerMonth)) 天、每天 \(Fmt.count(model.settings.hoursPerDay)) 小时换算")
-                    .font(.system(size: 9, weight: .medium, design: .rounded))
-                    .foregroundStyle(Palette.tertiary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text(
+                    model.t(
+                        .formulaNote,
+                        model.count(model.settings.workDaysPerMonth),
+                        model.count(model.settings.hoursPerDay)
+                    )
+                )
+                .font(.system(size: 9, weight: .medium, design: .rounded))
+                .foregroundStyle(Palette.tertiary)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
@@ -234,10 +334,10 @@ struct SettingsView: View {
             }
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("本次累计")
+                Text(model.t(.sessionTotal))
                     .font(.system(size: 9.5, weight: .medium, design: .rounded))
                     .foregroundStyle(Palette.secondary)
-                Text("¥\(Fmt.money(model.snapshot.total))")
+                Text(model.money(model.snapshot.total))
                     .font(.system(size: 15, weight: .bold, design: .rounded).monospacedDigit())
                     .foregroundStyle(Palette.ink)
             }
@@ -250,7 +350,7 @@ struct SettingsView: View {
                 HStack(spacing: 4) {
                     Image(systemName: "arrow.counterclockwise")
                         .font(.system(size: 9, weight: .bold))
-                    Text("重置")
+                    Text(model.t(.reset))
                 }
                 .font(.system(size: 10.5, weight: .semibold, design: .rounded))
                 .foregroundStyle(model.session.hasRecordedTime ? Palette.danger : Palette.tertiary)
@@ -274,9 +374,10 @@ struct SettingsView: View {
             Image(systemName: "lock.fill")
                 .font(.system(size: 8.5, weight: .semibold))
                 .padding(.top, 1.5)
-            Text("计时状态与收入设置只保存在这台 Mac 上；关闭应用后再次打开，会接着上次的状态继续计时。")
+            Text(model.t(.privacyNote))
                 .font(.system(size: 9, weight: .medium, design: .rounded))
                 .lineSpacing(1.5)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .foregroundStyle(Palette.tertiary)
         .padding(.horizontal, 2)
@@ -322,9 +423,11 @@ struct SettingNumberRow: View {
                 Text(title)
                     .font(.system(size: 12, weight: .semibold, design: .rounded))
                     .foregroundStyle(Palette.ink)
+                    .lineLimit(1)
                 Text(caption)
                     .font(.system(size: 8.5, weight: .medium, design: .rounded))
                     .foregroundStyle(Palette.tertiary)
+                    .lineLimit(1)
             }
 
             Spacer(minLength: 6)
@@ -340,7 +443,7 @@ struct SettingNumberRow: View {
                 .font(.system(size: 13, weight: .semibold, design: .rounded).monospacedDigit())
                 .foregroundStyle(Palette.ink)
                 .focused($focused)
-                .frame(width: 74)
+                .frame(width: 70)
                 .padding(.horizontal, 7)
                 .padding(.vertical, 5)
                 .background(
@@ -353,9 +456,11 @@ struct SettingNumberRow: View {
                 )
 
                 Text(suffix)
-                    .font(.system(size: 9, weight: .medium, design: .rounded))
+                    .font(.system(size: 8.5, weight: .medium, design: .rounded))
                     .foregroundStyle(Palette.secondary)
-                    .frame(width: 31, alignment: .leading)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                    .frame(width: 54, alignment: .leading)
             }
         }
         .frame(height: 45)
@@ -375,6 +480,8 @@ struct SummaryStat: View {
             Text(label)
                 .font(.system(size: 8.5, weight: .medium, design: .rounded))
                 .foregroundStyle(Palette.tertiary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
             Text(value)
                 .font(.system(size: 10.5, weight: .semibold, design: .rounded).monospacedDigit())
                 .foregroundStyle(Palette.ink)
