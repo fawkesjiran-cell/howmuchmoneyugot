@@ -69,11 +69,11 @@ final class StatusBarController: NSObject, NSPopoverDelegate {
         button.action = #selector(statusItemClicked(_:))
         button.sendAction(on: [.leftMouseUp, .rightMouseUp])
         button.setAccessibilityLabel(model.t(.statusAccessibilityLabel))
-        button.toolTip = model.t(.brand)
+        button.toolTip = AppMetadata.displayName
     }
 
     private func configurePopover() {
-        popover.contentSize = NSSize(width: 392, height: 608)
+        popover.contentSize = NSSize(width: 392, height: 456)
         popover.contentViewController = hostingController
         popover.behavior = .transient
         popover.animates = true
@@ -109,7 +109,7 @@ final class StatusBarController: NSObject, NSPopoverDelegate {
         button.setAccessibilityLabel(model.t(.statusAccessibilityLabel))
         button.toolTip = model.t(
             .statusTooltip,
-            model.t(.brand),
+            AppMetadata.displayName,
             model.phaseTitle(snapshot.phase),
             model.money(snapshot.total)
         )
@@ -136,7 +136,7 @@ final class StatusBarController: NSObject, NSPopoverDelegate {
         let menu = NSMenu()
 
         let openItem = NSMenuItem(
-            title: model.t(.openApp),
+            title: model.t(.openApp, AppMetadata.displayName),
             action: #selector(openPanel),
             keyEquivalent: ""
         )
@@ -157,7 +157,7 @@ final class StatusBarController: NSObject, NSPopoverDelegate {
         menu.addItem(.separator())
 
         let quitItem = NSMenuItem(
-            title: model.t(.quitApp),
+            title: model.t(.quitApp, AppMetadata.displayName),
             action: #selector(quitApp),
             keyEquivalent: "q"
         )
@@ -200,10 +200,10 @@ final class StatusBarController: NSObject, NSPopoverDelegate {
     private func statusImage(for currency: CurrencyUnit) -> NSImage? {
         let image = NSImage(
             systemSymbolName: iconName(for: currency),
-            accessibilityDescription: model.t(.brand)
+            accessibilityDescription: AppMetadata.displayName
         ) ?? NSImage(
             systemSymbolName: "creditcard.circle.fill",
-            accessibilityDescription: model.t(.brand)
+            accessibilityDescription: AppMetadata.displayName
         )
         image?.isTemplate = true
         return image

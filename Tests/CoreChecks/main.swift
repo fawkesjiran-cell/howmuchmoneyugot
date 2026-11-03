@@ -234,6 +234,7 @@ do {
     expect(AppLanguage.english.localeIdentifier == "en_US")
     expect(AppLanguage.systemDefault(preferredLanguages: ["zh-Hans-CN"]) == .zhHans)
     expect(AppLanguage.systemDefault(preferredLanguages: ["en-US"]) == .english)
+    expect(AppMetadata.displayName == "How much money u got?")
 
     expect(CurrencyUnit.cny.code == "CNY")
     expect(CurrencyUnit.usd.symbol == "$")

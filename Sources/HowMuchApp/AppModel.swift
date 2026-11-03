@@ -107,16 +107,6 @@ final class AppModel: ObservableObject {
         session.phase != .idle
     }
 
-    var phaseHint: String {
-        switch session.phase {
-        case .idle: return t(.phaseHintIdle)
-        case .working: return t(.phaseHintWorking)
-        case .clockedOut: return t(.phaseHintClockedOut)
-        case .overtime: return t(.phaseHintOvertime)
-        case .finished: return t(.phaseHintFinished)
-        }
-    }
-
     // MARK: - Localization & display
 
     func t(_ key: LKey, _ arguments: CVarArg...) -> String {
@@ -151,15 +141,6 @@ final class AppModel: ObservableObject {
         }
     }
 
-    func phaseBadgeTitle(_ phase: WorkPhase) -> String {
-        switch phase {
-        case .idle: return t(.phaseBadgeIdle)
-        case .working: return t(.phaseBadgeWorking)
-        case .clockedOut: return t(.phaseBadgeClockedOut)
-        case .overtime: return t(.phaseBadgeOvertime)
-        case .finished: return t(.phaseBadgeFinished)
-        }
-    }
 
     // MARK: - Actions
 

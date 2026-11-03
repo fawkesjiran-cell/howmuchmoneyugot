@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render the 进账 app icon at 1024px, then build the macOS iconset."""
+"""Render the How much money u got? app icon at 1024px, then build the macOS iconset."""
 
 from __future__ import annotations
 

@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-APP_NAME="进账"
+APP_NAME="How much money u got?"
 EXECUTABLE="HowMuch"
 APP="$ROOT/dist/$APP_NAME.app"
 BUILD_HOME="$ROOT/.build/home"

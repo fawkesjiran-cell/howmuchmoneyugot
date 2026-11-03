@@ -1,8 +1,9 @@
 import AppKit
 import Combine
+import HowMuchCore
 
 @main
-struct JinZhangApp {
+struct HowMuchMoneyUGotApp {
     @MainActor private static var delegate: AppDelegate?
 
     @MainActor
@@ -58,7 +59,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let appMenuItem = NSMenuItem()
         mainMenu.addItem(appMenuItem)
-        let appMenu = NSMenu(title: model.t(.brand))
+        let appMenu = NSMenu(title: AppMetadata.displayName)
         let showItem = NSMenuItem(
             title: model.t(.showPanel),
             action: #selector(showPanelFromMenu),
@@ -68,13 +69,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         appMenu.addItem(showItem)
         appMenu.addItem(.separator())
         appMenu.addItem(
-            withTitle: model.t(.aboutApp),
+            withTitle: model.t(.aboutApp, AppMetadata.displayName),
             action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)),
             keyEquivalent: ""
         )
         appMenu.addItem(.separator())
         appMenu.addItem(
-            withTitle: model.t(.quitApp),
+            withTitle: model.t(.quitApp, AppMetadata.displayName),
             action: #selector(NSApplication.terminate(_:)),
             keyEquivalent: "q"
         )
