@@ -13,6 +13,8 @@ enum LKey: Hashable {
 
     // Dashboard
     case earnedThisSession
+    case sessionCurrentLabel
+    case totalLabel
     case dailyTarget
     case perSecond
     case perMinute
@@ -35,9 +37,6 @@ enum LKey: Hashable {
     case phaseTitleOvertime
     case phaseTitleFinished
     case resetThisSession
-    case restartConfirmTitle
-    case restartConfirmMessage
-    case restartAction
     case resetConfirmTitle
     case resetConfirmMessage
 
@@ -98,6 +97,8 @@ enum L10n {
         .currency: "货币单位",
 
         .earnedThisSession: "本次已赚",
+        .sessionCurrentLabel: "本次",
+        .totalLabel: "总计",
         .dailyTarget: "日薪目标",
         .perSecond: "每秒",
         .perMinute: "每分",
@@ -120,11 +121,8 @@ enum L10n {
         .phaseTitleOvertime: "加班计薪中",
         .phaseTitleFinished: "本次已完成",
         .resetThisSession: "重置本次",
-        .restartConfirmTitle: "开始新的一次计薪？",
-        .restartConfirmMessage: "本次已累计 %@，重新打卡会将这笔记录清零。",
-        .restartAction: "重新开始",
         .resetConfirmTitle: "重置本次计薪？",
-        .resetConfirmMessage: "当前累计的 %@ 将清零，且无法恢复。",
+        .resetConfirmMessage: "本次的 %@ 将清零，历史总计会保留。",
 
         .settingsTitle: "设置",
         .monthlySalary: "普通月薪",
@@ -165,6 +163,8 @@ enum L10n {
         .currency: "Currency",
 
         .earnedThisSession: "Earned this session",
+        .sessionCurrentLabel: "This session",
+        .totalLabel: "All time",
         .dailyTarget: "Daily target",
         .perSecond: "Per second",
         .perMinute: "Per minute",
@@ -187,11 +187,8 @@ enum L10n {
         .phaseTitleOvertime: "Earning overtime pay",
         .phaseTitleFinished: "Session finished",
         .resetThisSession: "Reset session",
-        .restartConfirmTitle: "Start a new session?",
-        .restartConfirmMessage: "This session has earned %@. Clocking in again will clear this record.",
-        .restartAction: "Start over",
         .resetConfirmTitle: "Reset this session?",
-        .resetConfirmMessage: "The current total of %@ will be cleared and cannot be restored.",
+        .resetConfirmMessage: "This session's %@ will be cleared. Your all-time total is kept.",
 
         .settingsTitle: "Settings",
         .monthlySalary: "Monthly salary",

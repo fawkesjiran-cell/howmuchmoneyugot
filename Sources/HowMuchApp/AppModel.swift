@@ -9,6 +9,7 @@ final class AppModel: ObservableObject {
         static let session = "jinzhang.workSession.v1"
         static let language = "jinzhang.language.v1"
         static let currency = "jinzhang.currency.v1"
+        static let ledger = "jinzhang.earningsLedger.v1"
         static let hasLaunched = "jinzhang.hasLaunched.v1"
     }
 
@@ -40,6 +41,13 @@ final class AppModel: ObservableObject {
         }
     }
 
+    @Published var ledger: EarningsLedger {
+        didSet {
+            guard !isHydrating else { return }
+            persist(ledger, key: StorageKey.ledger)
+        }
+    }
+
     @Published private(set) var now: Date
 
     private let defaults: UserDefaults
@@ -66,11 +74,14 @@ final class AppModel: ObservableObject {
             .string(forKey: StorageKey.currency)
             .flatMap(CurrencyUnit.init(rawValue:))
             ?? .cny
+        let initialLedger: EarningsLedger =
+            Self.load(EarningsLedger.self, key: StorageKey.ledger, from: defaults) ?? .empty
 
         self.settings = initialSettings
         self.session = initialSession
         self.language = initialLanguage
         self.currency = initialCurrency
+        self.ledger = initialLedger
         self.now = Date()
         self.isHydrating = false
 
@@ -87,6 +98,10 @@ final class AppModel: ObservableObject {
         EarningsCalculator.snapshot(settings: settings, session: session, at: now)
     }
 
+    var totalEarned: Double {
+        ledger.total(current: snapshot.total)
+    }
+
     var canClockIn: Bool {
         session.phase == .idle || session.phase == .clockedOut || session.phase == .finished
     }
@@ -101,10 +116,6 @@ final class AppModel: ObservableObject {
 
     var canEndOvertime: Bool {
         session.phase == .overtime
-    }
-
-    var clockInStartsNewSession: Bool {
-        session.phase != .idle
     }
 
     // MARK: - Localization & display
@@ -145,6 +156,10 @@ final class AppModel: ObservableObject {
     // MARK: - Actions
 
     func clockIn() {
+        now = Date()
+        if session.phase == .clockedOut || session.phase == .finished {
+            ledger.archive(snapshot.total)
+        }
         session = SessionEngine.apply(.clockIn, to: session, at: Date())
         now = Date()
     }

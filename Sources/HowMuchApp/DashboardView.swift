@@ -5,14 +5,7 @@ struct DashboardView: View {
     @EnvironmentObject private var model: AppModel
     let openSettings: () -> Void
 
-    @State private var pendingConfirmation: Confirmation?
-
-    private enum Confirmation: String, Identifiable {
-        case restart
-        case reset
-
-        var id: String { rawValue }
-    }
+    @State private var showResetAlert = false
 
     private var snapshot: EarningsSnapshot { model.snapshot }
 
@@ -31,27 +24,13 @@ struct DashboardView: View {
             Spacer(minLength: 0)
         }
         .padding(.bottom, 16)
-        .alert(item: $pendingConfirmation) { confirmation in
-            switch confirmation {
-            case .restart:
-                return Alert(
-                    title: Text(model.t(.restartConfirmTitle)),
-                    message: Text(model.t(.restartConfirmMessage, model.money(snapshot.total))),
-                    primaryButton: .destructive(Text(model.t(.restartAction))) {
-                        model.clockIn()
-                    },
-                    secondaryButton: .cancel(Text(model.t(.cancel)))
-                )
-            case .reset:
-                return Alert(
-                    title: Text(model.t(.resetConfirmTitle)),
-                    message: Text(model.t(.resetConfirmMessage, model.money(snapshot.total))),
-                    primaryButton: .destructive(Text(model.t(.reset))) {
-                        model.resetSession()
-                    },
-                    secondaryButton: .cancel(Text(model.t(.cancel)))
-                )
+        .alert(model.t(.resetConfirmTitle), isPresented: $showResetAlert) {
+            Button(model.t(.cancel), role: .cancel) {}
+            Button(model.t(.reset), role: .destructive) {
+                model.resetSession()
             }
+        } message: {
+            Text(model.t(.resetConfirmMessage, model.money(snapshot.total)))
         }
     }
 
@@ -74,7 +53,7 @@ struct DashboardView: View {
                 isEnabled: model.session.hasRecordedTime,
                 help: model.t(.resetThisSession)
             ) {
-                pendingConfirmation = .reset
+                showResetAlert = true
             }
 
             HeaderIconButton(
@@ -118,15 +97,45 @@ struct DashboardView: View {
                 .offset(x: 128, y: 64)
 
             VStack(alignment: .leading, spacing: 0) {
-                HStack {
-                    Spacer()
+                HStack(spacing: 6) {
                     StatusDot(
                         phase: snapshot.phase,
                         help: model.phaseTitle(snapshot.phase)
                     )
+
+                    Text(model.t(.sessionCurrentLabel))
+                        .font(.system(size: 9.5, weight: .semibold, design: .rounded))
+                        .tracking(0.6)
+                        .foregroundStyle(Palette.heroMuted)
+
+                    Spacer(minLength: 4)
+
+                    HStack(spacing: 4) {
+                        Text(model.t(.totalLabel))
+                            .font(.system(size: 8.5, weight: .medium, design: .rounded))
+                            .foregroundStyle(Palette.heroMuted)
+                        Text(model.money(model.totalEarned))
+                            .font(.system(size: 10.5, weight: .semibold, design: .rounded).monospacedDigit())
+                            .foregroundStyle(Palette.heroText.opacity(0.88))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.72)
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        Capsule()
+                            .fill(Color.white.opacity(0.09))
+                            .overlay(
+                                Capsule()
+                                    .strokeBorder(Color.white.opacity(0.07), lineWidth: 0.7)
+                            )
+                    )
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(
+                        "\(model.t(.totalLabel)) \(model.money(model.totalEarned))"
+                    )
                 }
-                .frame(height: 9)
-                .padding(.bottom, 5)
+                .padding(.bottom, 6)
 
                 HStack(alignment: .firstTextBaseline, spacing: 5) {
                     Text(model.currency.symbol)
@@ -183,7 +192,7 @@ struct DashboardView: View {
             }
             .padding(18)
         }
-        .frame(height: 174)
+        .frame(height: 184)
         .clipShape(RoundedRectangle(cornerRadius: 23, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 23, style: .continuous)
@@ -256,11 +265,7 @@ struct DashboardView: View {
                 style: .green,
                 isEnabled: model.canClockIn
             ) {
-                if model.clockInStartsNewSession && snapshot.total > 0.001 {
-                    pendingConfirmation = .restart
-                } else {
-                    model.clockIn()
-                }
+                model.clockIn()
             }
 
             ActionTile(

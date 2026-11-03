@@ -249,6 +249,34 @@ do {
     expect(decoded == .sgd, "currency should survive Codable round trip")
 }
 
+
+section("persistent earnings ledger")
+do {
+    var ledger = EarningsLedger.empty
+    expectClose(ledger.total(current: 12.5), 12.5)
+    ledger.archive(100)
+    expectClose(ledger.completedEarnings, 100)
+    expect(ledger.completedSessions == 1)
+    expectClose(ledger.total(current: 12.5), 112.5)
+    ledger.archive(50.25)
+    expectClose(ledger.completedEarnings, 150.25)
+    expect(ledger.completedSessions == 2)
+    ledger.archive(-10)
+    ledger.archive(Double.infinity)
+    expectClose(ledger.completedEarnings, 150.25)
+    expect(ledger.completedSessions == 2)
+    expectClose(ledger.total(current: -5), 150.25)
+
+    let encoder = JSONEncoder()
+    let decoder = JSONDecoder()
+    if let data = try? encoder.encode(ledger),
+       let decoded = try? decoder.decode(EarningsLedger.self, from: data) {
+        expect(decoded == ledger, "ledger should survive Codable round trip")
+    } else {
+        expect(false, "ledger encoding round trip failed")
+    }
+}
+
 if failures == 0 {
     print("\n✓ All core checks passed")
     exit(0)
