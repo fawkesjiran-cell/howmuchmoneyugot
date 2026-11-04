@@ -41,7 +41,15 @@ let lastTrayTooltip = '';
 let blurTimer = null;
 let dialogOpen = false;
 
+// `app.setName` also backs the default userData directory. A literal '?' is
+// illegal in Windows paths, and Chromium then aborts startup before any window
+// or tray exists: the process exits with code 0 and prints nothing. Keep the
+// display name, but give Windows a filesystem-safe user-data directory. macOS
+// allows '?' and keeps its existing folder, so saved state is left untouched.
 app.setName('How much money u got?');
+if (process.platform === 'win32') {
+  app.setPath('userData', path.join(app.getPath('appData'), 'how-much-money-u-got'));
+}
 app.setAppUserModelId('com.fawkesjiran.jinzhang');
 
 const singleInstance = app.requestSingleInstanceLock();
