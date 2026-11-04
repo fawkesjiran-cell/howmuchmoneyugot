@@ -1,10 +1,12 @@
-# Pine Ledger — 主界面与设置页重设计
+# Signal Ledger — 主界面与设置页
 
 `How much money u got?` 的 light / dark 主题与 392 × 320 页面稿。
 
 ## 概念
 
-一台**精密仪表**，不是 dashboard。余额是读数，session rail 是刻度；松绿代表已赚到的钱，余烬橙只代表加班，红色只用于破坏性操作。没有渐变文字、玻璃拟态、卡片投影或装饰性火焰。唯一例外是加班态：数字本身燃烧，火焰只存在于字形内部与紧贴字形的火舌里，不铺背景、不做火床。
+一台**精密仪表**，不是 dashboard。纯白地面承托 `#F1DDDF` 的信息块，黄色 `#FFE76F` 用于主操作、进度和加班；红色 `#E72D48` 收在品牌标识、状态点、火焰和破坏性操作里，不铺大面积红。没有渐变文字、玻璃拟态或卡片投影。唯一例外是加班态：数字本身燃烧，火焰只存在于字形内部与紧贴字形的火舌里，不铺背景、不做火床。
+
+> `panel.html` / `theme.html` 和 `shots/main-*.png` 是上一版 Pine Ledger 的过程稿；当前 SwiftUI 的 token 与 `shots/app-*.png` 以 Signal Ledger 为准。
 
 ## 文件
 
@@ -46,29 +48,31 @@ python3 -m http.server 8765 --bind 127.0.0.1
 
 | Role | Hex | 用途 |
 | --- | --- | --- |
-| canvas | `#F3F6F4` | popover 背景 |
-| surface | `#FFFFFF` | 卡片、输入框 |
-| ink | `#0E1F18` | 主文字、余额 |
-| muted | `#55685E` | 标签、次要值 |
-| faint | `#5F746A` | 时间戳、辅助说明（≥ 4.5:1） |
-| primary | `#146B4A` | 赚钱、主按钮、进度 |
-| ember | `#A5480A` | 加班 |
-| danger | `#B3261E` | 仅破坏性操作 |
-| line | `#DCE5DF` | 1px 分隔线 |
+| canvas | `#FFFFFF` | popover 的纯白地面 |
+| surface | `#F1DDDF` | 卡片、偏好控件、信息块 |
+| field | `#FFFFFF` | 信息块内的输入框 |
+| ink | `#2B0B12` | 主文字、余额 |
+| muted | `#6D3A45` | 标签、次要值 |
+| faint | `#80505A` | 时间戳、辅助说明 |
+| primary | `#E72D48` | 品牌标识、工作状态点、火焰 |
+| ember | `#FFE76F` | 主操作、进度、加班；浅色文字用 `#8A5A00` |
+| danger | `#B3122C` | 仅破坏性操作 |
+| line | `#E3BEC5` | 1px 分隔线 |
 
 ### Dark
 
 | Role | Hex | 用途 |
 | --- | --- | --- |
-| canvas | `#091310` | popover 背景 |
-| surface | `#111E18` | 卡片、输入框 |
-| ink | `#EAF2ED` | 主文字、余额 |
-| muted | `#9FB3A7` | 标签、次要值 |
-| faint | `#7C9185` | 时间戳、辅助说明 |
-| primary | `#5BD6A0` | 赚钱、主按钮、进度 |
-| ember | `#F0A868` | 加班 |
-| danger | `#FF8177` | 仅破坏性操作 |
-| line | `#263A30` | 1px 分隔线 |
+| canvas | `#1C1416` | popover 的深色地面 |
+| surface | `#2A2022` | 卡片、偏好控件、信息块 |
+| field | `#1C1416` | 信息块内的输入框 |
+| ink | `#F8F1F2` | 主文字、余额 |
+| muted | `#CDB9BD` | 标签、次要值 |
+| faint | `#A68F94` | 时间戳、辅助说明 |
+| primary | `#FF6579` | 品牌标识、工作状态点、火焰 |
+| ember | `#FFE76F` | 主操作、进度、加班 |
+| danger | `#FF8A9A` | 仅破坏性操作 |
+| line | `#453739` | 1px 分隔线 |
 
 字体：Geist 400 / 500 / 600；所有金额、时间使用 `tabular-nums`。中文回退到系统 PingFang SC。
 
@@ -88,8 +92,8 @@ python3 -m http.server 8765 --bind 127.0.0.1
 ## 加班火数字
 
 - 只烧数字，不烧卡片：`340×46` canvas @2×，先画火，再用文字 alpha 掩膜裁切；没有火床、没有背景火。
-- 火体：深余烬 `#5A1002` → `#A32605` → `#D94A08` → `#4A0C02`，叠加 20 条宽火舌 + 44 条细流 + 26 个火星；再加一层很轻的白金熔芯（12%）。
-- 字形边缘：light 用 `0.6px` 深棕描边 `#2A0A04` 保住可读性；dark 只留 `0.45px` 低透明描边，让辉光定义边缘。
+- 火体：深酒红 `#3A0710` → `#6B0D1C` → `#C21E36` → `#FFE76F` → `#8A5A00`，叠加宽火舌、细流和火星；再加一层很轻的白金熔芯。
+- 字形边缘：light 用约 `0.55px` 的深酒红描边 `#2B0B12` 保住可读性；dark 只留低透明描边，让辉光定义边缘。
 - 紧贴字形的 12 条火舌与 18 个余烬可以越出字形几像素，制造“数字在烧”的生命感；不向下方铺火。
 - 动态：30fps 画布、3.8s 数字呼吸、2.4s 状态点脉冲；`prefers-reduced-motion` 与 `?freeze=1` 都退化为 4.6s 的静态火形。
 - 可访问性：canvas 带 `role="img"` 和 `¥456.39` 的 `aria-label`；金额语义不依赖火焰。
@@ -98,11 +102,11 @@ python3 -m http.server 8765 --bind 127.0.0.1
 
 这套稿已经落进 `Sources/HowMuchApp/`，不是只停在 HTML：
 
-- `Theme.swift`：Pine Ledger 的 light/dark token（canvas、surface、line、ink、muted、faint、primary、ember、danger），`AppBackground` 改为纯 canvas，卡片统一 1px hairline、无阴影。
-- `DashboardView.swift`：36px header + 86px 余额 + 22px 目标 + 44px 费率 + 40px 操作 + 28px rail，固定 392×320；费率按 `4 / 3 / 2` 位小数显示，操作行始终只有一个 filled primary。主 header 按 mock 的嵌套 padding 使用 32px 总 inset（左右各 32），reset/gear 为 28px 圆形热区、13px 线性图标，不再贴到面板边缘。
+- `Theme.swift`：Signal Ledger 的 light/dark token（canvas、surface、field、line、ink、muted、faint、primary、ember、danger），`AppBackground` 使用纯白/深色地面，卡片统一 1px hairline、无阴影。
+- `DashboardView.swift`：36px header + 86px 余额 + 22px 目标 + 44px 费率 + 40px 操作 + 28px rail，固定 392×320；费率按 `4 / 3 / 2` 位小数显示，操作行始终只有一个 filled primary。主 header 按 mock 的嵌套 padding 使用 32px 总 inset（左右各 32），reset/theme/gear 都是 28px 圆形热区、13px 线性图标；theme 单按钮按「跟随系统 → 亮色 → 暗色」循环并持久化，点击后短暂显示当前模式，不额外占一行，也不贴到面板边缘。
 - `SettingsView.swift`：52px header、可滚动 Preferences / Pay / Rates / Data；语言和货币用自绘的 31px 控件 + 原生菜单（避免嵌套 popover 把状态栏面板关掉），Pay 输入框保留原有 `PaySettings` 绑定与校验，重置仍走原来的二次确认。设置页首页 section 间距按 mock 的 4px margin 重新对齐。
 - `AppFont.swift` + `Resources/Fonts/Geist[wght].ttf`：Geist 已真正打包并注册，正文/金额/标题都使用同一套 400/500/600 字重，中文回退系统 CJK；不是 SF Pro 近似。因 app bundle 名含 `?`，CoreText 直接按原路径注册会得到一个只有 7 个 glyph 的占位字体，所以注册前先复制到无特殊字符的临时路径。
-- `OvertimeFlame.swift`：保留原有 Canvas + Vortex 火体，改成 **只烧数字**；货币符号保持实心 ember 并加很轻的暖光，避免 20px 的 `¥` 被火舌和描边糊成 `8`，金额仍能一眼读清。数字本身仍使用深余烬底、流动火舌、熔芯、light 深棕描边 / dark 低透明描边。
+- `OvertimeFlame.swift`：保留原有 Canvas + Vortex 火体，改成 **只烧数字**；货币符号保持实心 ember 并加很轻的暖光，避免 20px 的 `¥` 被火舌和描边糊成 `8`，金额仍能一眼读清。数字本身仍使用深红/黄底、流动火舌、熔芯、light 深酒红描边 / dark 低透明描边。
 - `Localization.swift`：新增 Preferences/Pay/Rates/Data、短 rail 标签和“输入即保存”的中英文案。
 
 实际 SwiftUI 渲染截图（784×640 = 2× 392×320）：
@@ -113,7 +117,7 @@ python3 -m http.server 8765 --bind 127.0.0.1
 - `shots/app-settings-light-scroll.png` / `shots/app-settings-dark-scroll.png`
 - `shots/app-main-overtime-zh.png` / `shots/app-settings-zh.png`
 
-验证：`swift build`、`CoreChecks`、release 打包、打包后 app 的 `--capture-overtime` 均通过；上述截图全部由真实 `NSHostingView` 以 sRGB 渲染（不再带 Display P3 profile）并用 macOS Vision OCR 核对，主色与 HTML 稿的 `#146B4A / #F3F6F4` 逐像素一致。`×1.5`、`Start overtime`、中文短 rail、设置页滚到底的 Rates/Data 都能完整显示。
+验证：`swift build`、`CoreChecks`、release 打包、打包后 app 的 `--capture-overtime` 均通过；上述截图全部由真实 `NSHostingView` 以 sRGB 渲染（不再带 Display P3 profile）并用 macOS Vision OCR 核对，主色与当前 token 的 `#E72D48 / #F1DDDF / #FFE76F` 逐像素一致。`×1.5`、`Start overtime`、中文短 rail、设置页滚到底的 Rates/Data 都能完整显示。
 
 Stitch 仍是“主题已成、页面未出”；落地截图不是 Stitch screen。
 

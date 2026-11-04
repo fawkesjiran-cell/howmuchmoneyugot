@@ -1,8 +1,40 @@
 import AppKit
 import SwiftUI
 
-/// Pine Ledger tokens. Flat surfaces, 1px hairlines, pine for earned money,
-/// ember for overtime, red only for destructive actions.
+/// How the app chooses its appearance. The UI exposes one compact button that
+/// cycles through system → light → dark, so the choice is always one click away.
+enum ThemePreference: String, CaseIterable {
+    case system
+    case light
+    case dark
+
+    var next: ThemePreference {
+        switch self {
+        case .system: return .light
+        case .light: return .dark
+        case .dark: return .system
+        }
+    }
+
+    var symbolName: String {
+        switch self {
+        case .system: return "circle.lefthalf.filled"
+        case .light: return "sun.max"
+        case .dark: return "moon"
+        }
+    }
+
+    var titleKey: LKey {
+        switch self {
+        case .system: return .appearanceSystem
+        case .light: return .appearanceLight
+        case .dark: return .appearanceDark
+        }
+    }
+}
+
+/// Signal Ledger tokens. Flat surfaces, 1px hairlines, crimson for earned money,
+/// yellow for overtime, and a deeper crimson only for destructive actions.
 enum Palette {
     private static func dynamic(light: UInt32, dark: UInt32, lightAlpha: CGFloat = 1, darkAlpha: CGFloat = 1) -> Color {
         Color(nsColor: NSColor(name: nil) { appearance in
@@ -14,32 +46,37 @@ enum Palette {
         })
     }
 
-    static let canvas = dynamic(light: 0xF3F6F4, dark: 0x091310)
+    static let canvas = dynamic(light: 0xFFFFFF, dark: 0x1C1416)
     static let canvasDeep = canvas
-    static let sunken = dynamic(light: 0xE8EFEA, dark: 0x060E0B)
-    static let surface = dynamic(light: 0xFFFFFF, dark: 0x111E18)
+    static let sunken = dynamic(light: 0xF1DDDF, dark: 0x120D0F)
+    static let surface = dynamic(light: 0xF1DDDF, dark: 0x2A2022)
     static let surfaceStrong = surface
-    static let surfaceMuted = dynamic(light: 0xEEF3EF, dark: 0x0D1813)
-    static let line = dynamic(light: 0xDCE5DF, dark: 0x263A30)
-    static let lineStrong = dynamic(light: 0xC6D3CA, dark: 0x345044)
+    /// Inputs and other wells sit on top of a pink block, so keep them white.
+    static let field = dynamic(light: 0xFFFFFF, dark: 0x1C1416)
+    static let surfaceMuted = dynamic(light: 0xF1DDDF, dark: 0x33272A)
+    static let line = dynamic(light: 0xE3BEC5, dark: 0x453739)
+    static let lineStrong = dynamic(light: 0xD1A0A8, dark: 0x5D4B4F)
 
-    static let ink = dynamic(light: 0x0E1F18, dark: 0xEAF2ED)
-    static let secondary = dynamic(light: 0x55685E, dark: 0x9FB3A7)
-    static let tertiary = dynamic(light: 0x5F746A, dark: 0x7C9185)
+    static let ink = dynamic(light: 0x2B0B12, dark: 0xF8F1F2)
+    static let secondary = dynamic(light: 0x6D3A45, dark: 0xCDB9BD)
+    static let tertiary = dynamic(light: 0x80505A, dark: 0xA68F94)
     static let muted = secondary
     static let faint = tertiary
 
-    static let primary = dynamic(light: 0x146B4A, dark: 0x5BD6A0)
-    static let primaryHover = dynamic(light: 0x0D5238, dark: 0x86E9BC)
-    static let primarySoft = dynamic(light: 0xDCEFE4, dark: 0x123528)
-    static let onPrimary = dynamic(light: 0xFFFFFF, dark: 0x06231A)
+    static let primary = dynamic(light: 0xE72D48, dark: 0xFF6579)
+    static let primaryHover = dynamic(light: 0xC91F39, dark: 0xFF8B9A)
+    static let primarySoft = dynamic(light: 0xF1DDDF, dark: 0x3A2227)
+    static let onPrimary = dynamic(light: 0xFFFFFF, dark: 0x2B0B12)
 
-    static let ember = dynamic(light: 0xA5480A, dark: 0xF0A868)
-    static let emberSoft = dynamic(light: 0xFBEBDC, dark: 0x2A1B0F)
-    static let onEmber = dynamic(light: 0xFFFFFF, dark: 0x1A0F06)
+    /// Gold is the legible text tone for the yellow highlight on light
+    /// surfaces; the exact FFE76F is used for filled surfaces and the fire.
+    static let ember = dynamic(light: 0x8A5A00, dark: 0xFFE76F)
+    static let emberFill = dynamic(light: 0xFFE76F, dark: 0xFFE76F)
+    static let emberSoft = dynamic(light: 0xFFF3B0, dark: 0x3A2F0F)
+    static let onEmber = dynamic(light: 0x2B0B12, dark: 0x2B0B12)
 
-    static let danger = dynamic(light: 0xB3261E, dark: 0xFF8177)
-    static let dangerSoft = dynamic(light: 0xFBEAE8, dark: 0x2B1513)
+    static let danger = dynamic(light: 0xB3122C, dark: 0xFF8A9A)
+    static let dangerSoft = dynamic(light: 0xF1DDDF, dark: 0x3A1D22)
 
     static let shadow = Color.clear
 
@@ -48,7 +85,7 @@ enum Palette {
     static let green = primary
     static let accent = primary
     static let accentDeep = primary
-    static let gold = ember
+    static let gold = emberFill
     static let goldDeep = ember
     static let buttonInk = ink
     static let buttonInkText = onPrimary

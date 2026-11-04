@@ -57,8 +57,18 @@ final class StatusBarController: NSObject, NSPopoverDelegate {
 
         NSApp.activate(ignoringOtherApps: true)
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+        applyAppearance(NSApp.appearance)
         button.highlight(true)
         popover.contentViewController?.view.window?.makeKey()
+    }
+
+    /// NSPopover keeps the appearance it resolved when its window was created.
+    /// Re-apply the app appearance explicitly so a theme click updates an open
+    /// panel instead of only the next launch.
+    func applyAppearance(_ appearance: NSAppearance?) {
+        popover.appearance = appearance
+        hostingController.view.appearance = appearance
+        hostingController.view.window?.appearance = appearance
     }
 
     func togglePopover() {

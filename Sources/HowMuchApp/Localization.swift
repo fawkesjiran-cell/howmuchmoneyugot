@@ -7,6 +7,11 @@ enum LKey: Hashable {
     case done
     case back
     case settings
+    case appearanceSystem
+    case appearanceLight
+    case appearanceDark
+    case appearanceHelp
+    case appearanceToast
     case language
     case languageHint
     case currency
@@ -107,6 +112,11 @@ enum L10n {
         .done: "完成",
         .back: "返回",
         .settings: "设置",
+        .appearanceSystem: "跟随系统",
+        .appearanceLight: "亮色",
+        .appearanceDark: "暗色",
+        .appearanceHelp: "外观：%@ · 点击切换",
+        .appearanceToast: "外观：%@",
         .language: "语言",
         .languageHint: "界面会立即切换",
         .currency: "货币单位",
@@ -188,6 +198,11 @@ enum L10n {
         .done: "Done",
         .back: "Back",
         .settings: "Settings",
+        .appearanceSystem: "System",
+        .appearanceLight: "Light",
+        .appearanceDark: "Dark",
+        .appearanceHelp: "Appearance: %@ · Click to cycle",
+        .appearanceToast: "Appearance: %@",
         .language: "Language",
         .languageHint: "Applies immediately",
         .currency: "Currency",

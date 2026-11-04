@@ -11,6 +11,12 @@ enum FirePreview {
         defaults.removePersistentDomain(forName: suite)
 
         let model = AppModel(defaults: defaults)
+        let args = ProcessInfo.processInfo.arguments
+        if args.contains("--dark") {
+            model.theme = .dark
+        } else if args.contains("--light") {
+            model.theme = .light
+        }
         model.language = language
         model.currency = currency
         model.settings = PaySettings(
@@ -20,7 +26,6 @@ enum FirePreview {
             overtimeHourlyRate: 187.5
         )
         model.ledger = EarningsLedger(completedEarnings: 1_280.40, completedSessions: 4)
-        let args = ProcessInfo.processInfo.arguments
         let modeIndex = args.firstIndex(of: "--capture-mode")
         let mode = modeIndex.map { args[$0 + 1] } ?? "overtime"
         let now = Date()

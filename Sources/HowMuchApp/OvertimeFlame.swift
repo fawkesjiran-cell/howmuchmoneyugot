@@ -49,9 +49,9 @@ struct OvertimeAmount: View {
     /// The currency mark stays a solid warm glyph so the amount is still
     /// immediately legible; the digits themselves carry the fire.
     private var overtimeSymbol: some View {
-        symbolLabel(AnyShapeStyle(Palette.ember))
+        symbolLabel(AnyShapeStyle(Palette.primary))
             .shadow(
-                color: Palette.ember.opacity(colorScheme == .dark ? 0.28 : 0.12),
+                color: Palette.primary.opacity(colorScheme == .dark ? 0.28 : 0.12),
                 radius: 3
             )
     }
@@ -71,9 +71,9 @@ struct OvertimeAmount: View {
 
                 Text(separator)
                     .font(AppFont.geist(46, .semibold))
-                    .foregroundStyle(Palette.ember)
+                    .foregroundStyle(Palette.primary)
                     .shadow(
-                        color: Palette.ember.opacity(colorScheme == .dark ? 0.30 : 0.14),
+                        color: Palette.primary.opacity(colorScheme == .dark ? 0.30 : 0.14),
                         radius: 2
                     )
 
@@ -85,21 +85,21 @@ struct OvertimeAmount: View {
     private func burningDigits(_ text: String, time: Double, animated: Bool) -> some View {
         let pulse = CGFloat(1 + (animated ? 0.008 * sin(time * 3.1) : 0))
         let rim = colorScheme == .dark
-            ? Color(hex: 0x1A0A04).opacity(0.35)
-            : Color(hex: 0x2A0A04).opacity(0.72)
+            ? Color(hex: 0x16060A).opacity(0.42)
+            : Color(hex: 0x2B0B12).opacity(0.90)
 
         return burningLabel(text, time: time, animated: animated)
             .scaleEffect(pulse, anchor: .leading)
-            .shadow(color: rim, radius: 0.1, x: 0.45, y: 0)
-            .shadow(color: rim, radius: 0.1, x: -0.45, y: 0)
-            .shadow(color: rim, radius: 0.1, x: 0, y: 0.45)
-            .shadow(color: rim, radius: 0.1, x: 0, y: -0.45)
+            .shadow(color: rim, radius: 0.1, x: 0.55, y: 0)
+            .shadow(color: rim, radius: 0.1, x: -0.55, y: 0)
+            .shadow(color: rim, radius: 0.1, x: 0, y: 0.55)
+            .shadow(color: rim, radius: 0.1, x: 0, y: -0.55)
             .shadow(
-                color: Color(hex: 0xFF8A10).opacity(colorScheme == .dark ? 0.40 : 0.22),
+                color: Color(hex: 0xFFE76F).opacity(colorScheme == .dark ? 0.42 : 0.24),
                 radius: 4.5
             )
             .shadow(
-                color: Color(hex: 0xFF3200).opacity(colorScheme == .dark ? 0.25 : 0.12),
+                color: Color(hex: 0xE72D48).opacity(colorScheme == .dark ? 0.30 : 0.16),
                 radius: 10,
                 y: -1.5
             )
@@ -126,12 +126,12 @@ struct OvertimeAmount: View {
     /// a slightly cooler, textured rim.
     private func moltenCoreLayer(text: String, animated: Bool) -> some View {
         ZStack {
-            moltenCore(text, blur: 3.2, opacity: 0.30)
-            moltenCore(text, blur: 1.0, opacity: 0.44)
+            moltenCore(text, blur: 3.2, opacity: 0.16)
+            moltenCore(text, blur: 1.0, opacity: 0.24)
 
             if animated {
                 GlyphFireParticles()
-                    .opacity(0.5)
+                    .opacity(0.30)
             }
         }
     }
@@ -145,12 +145,12 @@ struct OvertimeAmount: View {
     private var coreGradient: LinearGradient {
         LinearGradient(
             stops: [
-                .init(color: Color(hex: 0xFFFFE8), location: 0.10),
-                .init(color: Color(hex: 0xFFE68E), location: 0.32),
-                .init(color: Color(hex: 0xFFC040), location: 0.55),
-                .init(color: Color(hex: 0xFF9422), location: 0.75),
-                .init(color: Color(hex: 0xFF6A10), location: 0.90),
-                .init(color: Color(hex: 0xFF4A04), location: 1.00)
+                .init(color: Color(hex: 0xFFFFF8), location: 0.08),
+                .init(color: Color(hex: 0xFFE76F), location: 0.34),
+                .init(color: Color(hex: 0xFFC83D), location: 0.56),
+                .init(color: Color(hex: 0xE72D48), location: 0.76),
+                .init(color: Color(hex: 0x8F1024), location: 0.92),
+                .init(color: Color(hex: 0x3A0710), location: 1.00)
             ],
             startPoint: .top,
             endPoint: .bottom
@@ -189,11 +189,12 @@ private struct FlameBody: View {
                 Path(CGRect(origin: .zero, size: size)),
                 with: .linearGradient(
                     Gradient(stops: [
-                        .init(color: Color(hex: 0x5A1002), location: 0.0),
-                        .init(color: Color(hex: 0xA32605), location: 0.30),
-                        .init(color: Color(hex: 0xD94A08), location: 0.62),
-                        .init(color: Color(hex: 0x8A1C04), location: 0.84),
-                        .init(color: Color(hex: 0x4A0C02), location: 1.0)
+                        .init(color: Color(hex: 0x3A0710), location: 0.0),
+                        .init(color: Color(hex: 0x6B0D1C), location: 0.25),
+                        .init(color: Color(hex: 0xC21E36), location: 0.50),
+                        .init(color: Color(hex: 0xE72D48), location: 0.68),
+                        .init(color: Color(hex: 0xFFE76F), location: 0.86),
+                        .init(color: Color(hex: 0x8A5A00), location: 1.0)
                     ]),
                     startPoint: .zero,
                     endPoint: CGPoint(x: 0, y: size.height)
@@ -334,16 +335,16 @@ private struct FlameBody: View {
                     width: radius * 2,
                     height: radius * 2
                 )),
-                with: .color(Color(hex: 0xFFF3C8))
+                with: .color(Color(hex: 0xFFFFE0))
             )
         }
     }
 
     private func streakColor(_ seed: Double) -> Color {
         switch seed {
-        case 0.86...: return Color(hex: 0xFFFFE4)
-        case 0.58...: return Color(hex: 0xFFC838)
-        default: return Color(hex: 0xFF7E0A)
+        case 0.86...: return Color(hex: 0xFFFFF2)
+        case 0.58...: return Color(hex: 0xFFE76F)
+        default: return Color(hex: 0xE72D48)
         }
     }
 
@@ -389,11 +390,11 @@ private enum GlyphFire {
         system.lifespan = 0.68
         system.lifespanVariation = 0.26
         system.colors = .ramp(
-            color(0xFFFFE0),
-            color(0xFFC850),
-            color(0xFF7A10),
-            color(0xC22400).opacity(0.35),
-            color(0x7A0A00).opacity(0)
+            color(0xFFFFF2),
+            color(0xFFE76F),
+            color(0xE72D48),
+            color(0x8F1024).opacity(0.35),
+            color(0x3A0710).opacity(0)
         )
         system.size = 0.34
         system.sizeVariation = 0.35

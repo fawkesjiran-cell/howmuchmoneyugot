@@ -2,7 +2,7 @@ import AppKit
 import HowMuchCore
 import SwiftUI
 
-/// Pine Ledger settings: preferences, a compact pay ledger, derived rates and
+/// Signal Ledger settings: preferences, a compact pay ledger, derived rates and
 /// one destructive data block. Everything scrolls under a fixed header.
 struct SettingsView: View {
     @EnvironmentObject private var model: AppModel
@@ -90,7 +90,7 @@ struct SettingsView: View {
             Button(action: close) {
                 Text(model.t(.done))
                     .font(AppFont.geist(11.5, .semibold))
-                    .foregroundStyle(Palette.primary)
+                    .foregroundStyle(Palette.secondary)
                     .padding(.horizontal, 6)
                     .padding(.vertical, 5)
                     .background(
@@ -175,11 +175,10 @@ struct SettingsView: View {
             SettingNumberRow(
                 icon: "banknote",
                 title: model.t(.monthlySalary),
-                tint: Palette.primary,
+                tint: Palette.secondary,
                 value: settingBinding(\.monthlySalary),
                 suffix: "\(model.currency.code)/\(model.t(.perMonthSuffix))",
-                isInvalid: model.settings.monthlySalary <= 0,
-                suffixWidth: 46
+                isInvalid: model.settings.monthlySalary <= 0
             )
 
             rowDivider
@@ -187,11 +186,10 @@ struct SettingsView: View {
             SettingNumberRow(
                 icon: "calendar",
                 title: model.t(.workdaysPerMonth),
-                tint: Palette.primary,
+                tint: Palette.secondary,
                 value: settingBinding(\.workDaysPerMonth),
                 suffix: model.t(.daysSuffix),
-                isInvalid: model.settings.workDaysPerMonth <= 0,
-                suffixWidth: 38
+                isInvalid: model.settings.workDaysPerMonth <= 0
             )
 
             rowDivider
@@ -199,11 +197,10 @@ struct SettingsView: View {
             SettingNumberRow(
                 icon: "clock",
                 title: model.t(.hoursPerDay),
-                tint: Palette.primary,
+                tint: Palette.secondary,
                 value: settingBinding(\.hoursPerDay),
                 suffix: model.t(.hoursSuffix),
-                isInvalid: model.settings.hoursPerDay <= 0,
-                suffixWidth: 38
+                isInvalid: model.settings.hoursPerDay <= 0
             )
 
             rowDivider
@@ -214,8 +211,7 @@ struct SettingsView: View {
                 tint: Palette.ember,
                 value: settingBinding(\.overtimeHourlyRate),
                 suffix: "\(model.currency.code)/\(model.t(.perHourSuffix))",
-                isInvalid: false,
-                suffixWidth: 46
+                isInvalid: false
             )
             .contextMenu {
                 Button {
@@ -437,7 +433,7 @@ struct PreferenceMenu: View {
 
 /// A transparent AppKit hit area that opens a native NSMenu. Native menus are
 /// modal and do not dismiss the status-bar NSPopover, unlike a nested SwiftUI
-/// popover; the surrounding control keeps the Pine Ledger look.
+/// popover; the surrounding control keeps the Signal Ledger look.
 private struct PreferenceMenuAnchor: NSViewRepresentable {
     let options: [PreferenceOption]
     let accessibilityLabel: String
@@ -536,7 +532,8 @@ struct SettingNumberRow: View {
     @Binding var value: Double
     let suffix: String
     var isInvalid: Bool = false
-    var suffixWidth: CGFloat = 42
+    // Shared across all four rows so the input boxes and unit labels line up.
+    private let suffixWidth: CGFloat = 46
 
     @FocusState private var focused: Bool
 
@@ -578,7 +575,7 @@ struct SettingNumberRow: View {
             .padding(.horizontal, 6)
             .background(
                 RoundedRectangle(cornerRadius: 7, style: .continuous)
-                    .fill(focused ? Palette.surface : Palette.sunken)
+                    .fill(Palette.field)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 7, style: .continuous)

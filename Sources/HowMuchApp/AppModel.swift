@@ -9,6 +9,7 @@ final class AppModel: ObservableObject {
         static let session = "jinzhang.workSession.v1"
         static let language = "jinzhang.language.v1"
         static let currency = "jinzhang.currency.v1"
+        static let theme = "jinzhang.theme.v1"
         static let ledger = "jinzhang.earningsLedger.v1"
         static let hasLaunched = "jinzhang.hasLaunched.v1"
     }
@@ -38,6 +39,13 @@ final class AppModel: ObservableObject {
         didSet {
             guard !isHydrating else { return }
             defaults.set(currency.rawValue, forKey: StorageKey.currency)
+        }
+    }
+
+    @Published var theme: ThemePreference {
+        didSet {
+            guard !isHydrating else { return }
+            defaults.set(theme.rawValue, forKey: StorageKey.theme)
         }
     }
 
@@ -74,6 +82,10 @@ final class AppModel: ObservableObject {
             .string(forKey: StorageKey.currency)
             .flatMap(CurrencyUnit.init(rawValue:))
             ?? .cny
+        let initialTheme = defaults
+            .string(forKey: StorageKey.theme)
+            .flatMap(ThemePreference.init(rawValue:))
+            ?? .system
         let initialLedger: EarningsLedger =
             Self.load(EarningsLedger.self, key: StorageKey.ledger, from: defaults) ?? .empty
 
@@ -81,6 +93,7 @@ final class AppModel: ObservableObject {
         self.session = initialSession
         self.language = initialLanguage
         self.currency = initialCurrency
+        self.theme = initialTheme
         self.ledger = initialLedger
         self.now = Date()
         self.isHydrating = false
@@ -199,6 +212,10 @@ final class AppModel: ObservableObject {
 
     func useSuggestedOvertimeRate() {
         settings.overtimeHourlyRate = settings.suggestedOvertimeHourlyRate
+    }
+
+    func cycleTheme() {
+        theme = theme.next
     }
 
     func markLaunched() {

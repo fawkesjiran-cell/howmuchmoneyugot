@@ -1,7 +1,7 @@
 import CoreText
 import SwiftUI
 
-/// Geist is the typeface used by the Pine Ledger mock. It is bundled with the
+/// Geist is the typeface used by the Signal Ledger mock. It is bundled with the
 /// app and registered lazily so both the packaged app and the capture harness
 /// use the same metrics. Chinese copy falls back to the system CJK face.
 ///

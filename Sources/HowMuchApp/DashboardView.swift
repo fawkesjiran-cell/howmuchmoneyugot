@@ -2,13 +2,15 @@ import Foundation
 import HowMuchCore
 import SwiftUI
 
-/// Pine Ledger dashboard: flat paper, one hairline card, pine for money and
+/// Signal Ledger dashboard: flat paper, one hairline card, pine for money and
 /// ember only when the session is earning overtime.
 struct DashboardView: View {
     @EnvironmentObject private var model: AppModel
     let openSettings: () -> Void
 
     @State private var showResetAlert = false
+    @State private var themeNotice: ThemePreference?
+    @State private var themeNoticeDismissal: DispatchWorkItem?
 
     private var snapshot: EarningsSnapshot { model.snapshot }
     private var isOvertime: Bool { snapshot.phase == .overtime }
@@ -28,6 +30,37 @@ struct DashboardView: View {
         }
         .padding(.vertical, 12)
         .frame(width: 392, height: 320)
+        .overlay(alignment: .topTrailing) {
+            if let themeNotice {
+                Text(model.t(.appearanceToast, model.t(themeNotice.titleKey)))
+                    .font(AppFont.geist(9.5, .semibold))
+                    .foregroundStyle(Palette.ink)
+                    .lineLimit(1)
+                    .padding(.horizontal, 8)
+                    .frame(height: 21)
+                    .background(
+                        Capsule()
+                            .fill(Palette.surface)
+                    )
+                    .overlay(
+                        Capsule()
+                            .strokeBorder(Palette.line, lineWidth: 0.8)
+                    )
+                    .shadow(color: Palette.ink.opacity(0.05), radius: 4, y: 1)
+                    .padding(.top, 42)
+                    .padding(.trailing, 32)
+                    .transition(
+                        .opacity.combined(
+                            with: .scale(scale: 0.95, anchor: .topTrailing)
+                        )
+                    )
+                    .allowsHitTesting(false)
+            }
+        }
+        .onDisappear {
+            themeNoticeDismissal?.cancel()
+            themeNotice = nil
+        }
         .alert(model.t(.resetConfirmTitle), isPresented: $showResetAlert) {
             Button(model.t(.cancel), role: .cancel) {}
             Button(model.t(.reset), role: .destructive) {
@@ -55,6 +88,18 @@ struct DashboardView: View {
 
             HStack(spacing: 4) {
                 HeaderIconButton(
+                    icon: model.theme.symbolName,
+                    isEnabled: true,
+                    help: model.t(
+                        .appearanceHelp,
+                        model.t(model.theme.titleKey)
+                    )
+                ) {
+                    model.cycleTheme()
+                    showThemeNotice()
+                }
+
+                HeaderIconButton(
                     icon: "arrow.counterclockwise",
                     isEnabled: model.session.hasRecordedTime,
                     help: model.t(.resetThisSession)
@@ -73,6 +118,22 @@ struct DashboardView: View {
         }
         .padding(.horizontal, 32)
         .frame(height: 36)
+    }
+
+    private func showThemeNotice() {
+        themeNoticeDismissal?.cancel()
+
+        withAnimation(.easeOut(duration: 0.14)) {
+            themeNotice = model.theme
+        }
+
+        let work = DispatchWorkItem {
+            withAnimation(.easeIn(duration: 0.18)) {
+                themeNotice = nil
+            }
+        }
+        themeNoticeDismissal = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.35, execute: work)
     }
 
     // MARK: - Balance
@@ -180,7 +241,7 @@ struct DashboardView: View {
                         .fill(Palette.sunken)
 
                     Capsule()
-                        .fill(isOvertime ? Palette.ember : Palette.primary)
+                        .fill(Palette.emberFill)
                         .frame(width: proxy.size.width * targetProgress)
                 }
             }
@@ -262,7 +323,7 @@ struct DashboardView: View {
         // After clocking out, starting overtime is the primary next step. Clock
         // in stays available as a secondary action (it archives this session and
         // starts a fresh one) so the row never shows two filled primaries.
-        return snapshot.phase == .clockedOut ? .ghost : .pine
+        return snapshot.phase == .clockedOut ? .ghost : .solid
     }
 
     private var actions: some View {
@@ -279,7 +340,7 @@ struct DashboardView: View {
             ActionTile(
                 title: model.t(.actionOutShort),
                 icon: "stop.fill",
-                style: model.canClockOut ? .pine : .ghost,
+                style: model.canClockOut ? .solid : .ghost,
                 isEnabled: model.canClockOut
             ) {
                 model.clockOut()
@@ -288,7 +349,7 @@ struct DashboardView: View {
             ActionTile(
                 title: model.t(.startOvertime),
                 icon: "flame",
-                style: model.canStartOvertime ? .ember : .ghost,
+                style: model.canStartOvertime ? .solid : .ghost,
                 isEnabled: model.canStartOvertime,
                 showsEmberHint: !model.canStartOvertime && snapshot.phase == .working
             ) {
@@ -298,7 +359,7 @@ struct DashboardView: View {
             ActionTile(
                 title: model.t(.actionDoneShort),
                 icon: "checkmark",
-                style: model.canEndOvertime ? .ember : .ghost,
+                style: model.canEndOvertime ? .solid : .ghost,
                 isEnabled: model.canEndOvertime
             ) {
                 model.endOvertime()
@@ -329,14 +390,14 @@ struct DashboardView: View {
 
                     if regularProgress > 0 {
                         Rectangle()
-                            .fill(Palette.primary)
+                            .fill(Palette.secondary.opacity(0.55))
                             .frame(width: length * regularProgress, height: 1)
                             .offset(x: inset, y: 5)
                     }
 
                     if overtimeProgress > 0 {
                         Rectangle()
-                            .fill(Palette.ember)
+                            .fill(Palette.emberFill)
                             .frame(width: length * overtimeProgress, height: 1)
                             .offset(x: inset + length / 3, y: 5)
                     }
@@ -348,14 +409,14 @@ struct DashboardView: View {
                     label: model.t(.timelineInShort),
                     time: Fmt.time(model.session.normalStartedAt),
                     state: inState,
-                    accent: Palette.primary
+                    accent: Palette.secondary
                 )
 
                 RailStop(
                     label: model.t(.timelineOutShort),
                     time: Fmt.time(model.session.normalEndedAt),
                     state: outState,
-                    accent: Palette.primary
+                    accent: Palette.secondary
                 )
 
                 RailStop(
@@ -369,7 +430,7 @@ struct DashboardView: View {
                     label: model.t(.timelineDoneShort),
                     time: Fmt.time(model.session.overtimeEndedAt),
                     state: doneState,
-                    accent: Palette.primary
+                    accent: Palette.secondary
                 )
             }
         }
@@ -543,8 +604,7 @@ struct RateMetric: View {
 struct ActionTile: View {
     enum Style {
         case ghost
-        case pine
-        case ember
+        case solid
     }
 
     let title: String
@@ -561,8 +621,7 @@ struct ActionTile: View {
 
         switch style {
         case .ghost: return Palette.muted
-        case .pine: return Palette.onPrimary
-        case .ember: return Palette.onEmber
+        case .solid: return Palette.onEmber
         }
     }
 
@@ -575,8 +634,7 @@ struct ActionTile: View {
 
         switch style {
         case .ghost: return Palette.muted
-        case .pine: return Palette.onPrimary
-        case .ember: return Palette.onEmber
+        case .solid: return Palette.onEmber
         }
     }
 
@@ -585,8 +643,7 @@ struct ActionTile: View {
 
         switch style {
         case .ghost: return hovering ? Palette.surfaceMuted : .clear
-        case .pine: return hovering ? Palette.primaryHover : Palette.primary
-        case .ember: return hovering ? Palette.ember.opacity(0.90) : Palette.ember
+        case .solid: return hovering ? Palette.emberFill.opacity(0.90) : Palette.emberFill
         }
     }
 
@@ -599,8 +656,7 @@ struct ActionTile: View {
 
         switch style {
         case .ghost: return Palette.line
-        case .pine: return Palette.primary
-        case .ember: return Palette.ember
+        case .solid: return Palette.emberFill
         }
     }
 

@@ -26,6 +26,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         AppFont.prepare()
         NSApp.setActivationPolicy(.accessory)
+        NSApp.appearance = model.theme.appearance
         if ProcessInfo.processInfo.arguments.contains("--dark") {
             NSApp.appearance = NSAppearance(named: .darkAqua)
         }
@@ -35,6 +36,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         installMainMenu()
 
         statusBarController = StatusBarController(model: model)
+        statusBarController?.applyAppearance(model.theme.appearance)
 
         if let index = ProcessInfo.processInfo.arguments.firstIndex(of: "--capture-overtime"),
            ProcessInfo.processInfo.arguments.count > index + 1 {
@@ -58,6 +60,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 Task { @MainActor in
                     self?.installMainMenu()
                 }
+            }
+            .store(in: &cancellables)
+
+        model.$theme
+            .dropFirst()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] theme in
+                let appearance = theme.appearance
+                NSApp.appearance = appearance
+                self?.statusBarController?.applyAppearance(appearance)
             }
             .store(in: &cancellables)
 
@@ -120,5 +132,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func showPanelFromMenu() {
         statusBarController?.showPopover()
+    }
+}
+
+private extension ThemePreference {
+    var appearance: NSAppearance? {
+        switch self {
+        case .system: return nil
+        case .light: return NSAppearance(named: .aqua)
+        case .dark: return NSAppearance(named: .darkAqua)
+        }
     }
 }
