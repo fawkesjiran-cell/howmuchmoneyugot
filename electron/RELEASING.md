@@ -68,8 +68,8 @@ first launch.
 ## 3. Tag and publish
 
 ```bash
-git tag v1.5.0
-git push origin v1.5.0
+git tag v1.5.2
+git push origin v1.5.2
 ```
 
 The workflow creates a GitHub Release with:
