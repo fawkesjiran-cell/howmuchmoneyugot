@@ -1,0 +1,137 @@
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) {
+    module.exports = factory();
+  } else {
+    root.I18N = factory();
+  }
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  'use strict';
+
+  const STRINGS = {
+    'zh-Hans': {
+      resetSession: '重置本次',
+      settings: '设置',
+      appearanceSystem: '跟随系统',
+      appearanceLight: '亮色',
+      appearanceDark: '暗色',
+      appearance: '外观：%@',
+      thisSession: '本次',
+      allTime: '总计',
+      dailyTarget: '日薪目标',
+      perSecond: '每秒',
+      perMinute: '每分',
+      perHour: '每小时',
+      clockIn: '上班',
+      clockOut: '下班',
+      startOvertime: '开始加班',
+      endOvertime: '收工',
+      phaseIdle: '待打卡',
+      phaseWorking: '正常计薪中',
+      phaseClockedOut: '已打卡下班',
+      phaseOvertime: '加班计薪中',
+      phaseFinished: '本次已完成',
+      in: '上班',
+      out: '下班',
+      ot: '加班',
+      done: '收工',
+      settingsTitle: '设置',
+      back: '返回',
+      doneAction: '完成',
+      preferences: '偏好',
+      language: '语言',
+      currency: '货币单位',
+      pay: '薪资',
+      savedAsYouType: '输入即保存',
+      monthlySalary: '普通月薪',
+      workdays: '每月工作日',
+      hours: '每日工时',
+      overtimeRate: '加班时薪',
+      rates: '费率',
+      data: '数据',
+      resetEverything: '完全重置',
+      resetCaption: '当前总计 %@，清空后无法恢复',
+      clear: '清空',
+      resetSessionTitle: '重置本次计薪？',
+      resetSessionMessage: '本次的 %@ 将清零，历史总计会保留。',
+      resetEverythingTitle: '完全重置所有金额？',
+      resetEverythingMessage: '总计 %@（含本次 %@）将被永久清空，并停止当前计时。此操作无法撤销。',
+      cancel: '取消',
+      reset: '重置',
+      resetAll: '完全重置',
+      fillSuggested: '按 1.5× 填入 %@',
+      days: '天',
+      hoursUnit: '小时',
+      perMonth: '月',
+      perHourUnit: '时',
+      invalidValue: '请输入大于 0 的数值',
+      copies: '复制'
+    },
+    en: {
+      resetSession: 'Reset session',
+      settings: 'Settings',
+      appearanceSystem: 'System',
+      appearanceLight: 'Light',
+      appearanceDark: 'Dark',
+      appearance: 'Appearance: %@',
+      thisSession: 'This session',
+      allTime: 'All time',
+      dailyTarget: 'Daily target',
+      perSecond: 'Per second',
+      perMinute: 'Per minute',
+      perHour: 'Per hour',
+      clockIn: 'Clock in',
+      clockOut: 'Clock out',
+      startOvertime: 'Start overtime',
+      endOvertime: 'Finish',
+      phaseIdle: 'Ready to clock in',
+      phaseWorking: 'Earning regular pay',
+      phaseClockedOut: 'Clocked out',
+      phaseOvertime: 'Earning overtime pay',
+      phaseFinished: 'Session finished',
+      in: 'In',
+      out: 'Out',
+      ot: 'OT',
+      done: 'Done',
+      settingsTitle: 'Settings',
+      back: 'Back',
+      doneAction: 'Done',
+      preferences: 'Preferences',
+      language: 'Language',
+      currency: 'Currency',
+      pay: 'Pay',
+      savedAsYouType: 'Saved as you type',
+      monthlySalary: 'Monthly salary',
+      workdays: 'Workdays per month',
+      hours: 'Hours per day',
+      overtimeRate: 'Overtime rate',
+      rates: 'Rates',
+      data: 'Data',
+      resetEverything: 'Reset everything',
+      resetCaption: 'Current total %@. This cannot be undone.',
+      clear: 'Clear',
+      resetSessionTitle: 'Reset this session?',
+      resetSessionMessage: "This session's %@ will be cleared. Your all-time total is kept.",
+      resetEverythingTitle: 'Reset everything?',
+      resetEverythingMessage: 'Your all-time total of %@ (including %@ from this session) will be permanently cleared, and timing will stop. This cannot be undone.',
+      cancel: 'Cancel',
+      reset: 'Reset',
+      resetAll: 'Reset all',
+      fillSuggested: 'Fill 1.5× (%@)',
+      days: 'days',
+      hoursUnit: 'hours',
+      perMonth: 'mo',
+      perHourUnit: 'hr',
+      invalidValue: 'Enter a value greater than 0',
+      copies: 'copies'
+    }
+  };
+
+  function t(language, key, ...args) {
+    const table = STRINGS[language] || STRINGS.en;
+    let value = table[key] || STRINGS.en[key] || key;
+    for (const arg of args) value = value.replace('%@', String(arg));
+    return value;
+  }
+
+  return { t, STRINGS };
+});

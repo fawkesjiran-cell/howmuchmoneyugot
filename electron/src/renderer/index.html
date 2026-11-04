@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=392, initial-scale=1" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'none'" />
+  <title>How much money u got?</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <svg class="svg-defs" aria-hidden="true">
+    <defs>
+      <symbol id="i-system" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.25" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 3.75v16.5A8.25 8.25 0 0 0 12 3.75Z" fill="currentColor"/></symbol>
+      <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="3.6"/><path d="M12 2.8v2.1M12 19.1v2.1M21.2 12h-2.1M4.9 12H2.8M18.5 5.5l-1.5 1.5M7 17l-1.5 1.5M18.5 18.5 17 17M7 7 5.5 5.5"/></symbol>
+      <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19.2 15.6A7.7 7.7 0 0 1 8.4 4.8 7.9 7.9 0 1 0 19.2 15.6Z"/></symbol>
+      <symbol id="i-reset" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5A8 8 0 1 1 4.7 15"/><path d="M4 4v5.5h5.5"/></symbol>
+      <symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="m19 13.5 1.4 1.1-1.8 3.1-1.7-.7a7 7 0 0 1-1.8 1l-.3 1.9h-3.6l-.3-1.9a7 7 0 0 1-1.8-1l-1.7.7-1.8-3.1L6 13.5a7 7 0 0 1 0-3L4.6 9.4l1.8-3.1 1.7.7a7 7 0 0 1 1.8-1L10.2 4h3.6l.3 1.9a7 7 0 0 1 1.8 1l1.7-.7 1.8 3.1-1.4 1.1a7 7 0 0 1 0 3Z"/></symbol>
+      <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.8v12.4l10-6.2L8 5.8Z" fill="currentColor"/></symbol>
+      <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="1.2" fill="currentColor"/></symbol>
+      <symbol id="i-flame" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5c.5 3-1.2 4.2-2.7 5.7C7.5 11 6.4 12.7 6.4 15a5.6 5.6 0 0 0 11.2 0c0-2.2-1.2-4.1-2.8-5.9-1.1-1.2-2.2-2.5-2.8-5.6Z"/><path d="M12 11c.2 1.4-.5 2-.9 2.7-.6 1-1.2 1.9-1.2 3.1a2.1 2.1 0 0 0 4.2 0c0-1.3-.7-2.2-1.2-3.1-.5-.8-1-1.4-.9-2.7Z"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.3 4.3L19 7"/></symbol>
+      <symbol id="i-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 5-7 7 7 7"/></symbol>
+      <symbol id="i-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m5 9 7 7 7-7"/></symbol>
+      <symbol id="i-bank" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="7" width="17" height="10" rx="1.6"/><circle cx="12" cy="12" r="2.2"/><path d="M7 7V5.8h10V7"/></symbol>
+      <symbol id="i-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5.5" width="16" height="15" rx="2"/><path d="M7.5 3.5v4M16.5 3.5v4M4 9.5h16"/><path d="M8 13h2M14 13h2M8 16.5h2M14 16.5h2"/></symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.2 2"/></symbol>
+      <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13.5 2.8 5.8 13h5.2l-.5 8.2L18.2 11h-5.1l.4-8.2Z" fill="currentColor"/></symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M9 6V4h6v2M18 6l-1 14H7L6 6"/><path d="M10 10.5v6M14 10.5v6"/></symbol>
+    </defs>
+  </svg>
+
+  <div class="app">
+    <main id="mainView" class="view main-view">
+      <header class="topbar">
+        <div class="brand">
+          <span id="logoMark" class="mark" aria-hidden="true">¥</span>
+          <span class="wordmark">How much money u got?</span>
+        </div>
+        <div class="topbar-actions">
+          <button id="themeButton" class="iconbtn" type="button" aria-label="Appearance">
+            <svg viewBox="0 0 24 24"><use id="themeIcon" href="#i-system"></use></svg>
+          </button>
+          <button id="resetButton" class="iconbtn" type="button" aria-label="Reset session">
+            <svg viewBox="0 0 24 24"><use href="#i-reset"></use></svg>
+          </button>
+          <button id="settingsButton" class="iconbtn" type="button" aria-label="Settings">
+            <svg viewBox="0 0 24 24"><use href="#i-gear"></use></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="main-content">
+        <section class="balance">
+          <div class="status-row">
+            <span id="statusDot" class="status-dot"></span>
+            <span id="thisSessionLabel" class="status-label">This session</span>
+            <span class="sep">·</span>
+            <span id="phaseText" class="phase-text">Ready to clock in</span>
+            <span id="otChip" class="ot-chip" hidden>×1.5</span>
+          </div>
+          <div class="amount-row">
+            <span id="currencySymbol" class="currency">¥</span>
+            <span id="normalAmount" class="amount">0.00</span>
+            <canvas id="fireCanvas" class="fire" width="600" height="92" hidden aria-label="Overtime earnings on fire"></canvas>
+          </div>
+          <div class="meta-row">
+            <span id="sessionTime" class="time">00:00:00</span>
+            <span class="sep">·</span>
+            <span id="allTime">All time ¥0.00</span>
+          </div>
+        </section>
+
+        <section class="target">
+          <div class="target-row">
+            <span id="targetLabel">Daily target · ¥0.00</span>
+            <span id="targetPercent" class="pct">0%</span>
+          </div>
+          <div class="track"><i id="targetFill"></i></div>
+        </section>
+
+        <section class="rates-card" aria-label="Current rates">
+          <div class="rate">
+            <span id="rateSecLabel" class="rlabel">per second</span>
+            <span class="rval"><i id="rateSecSymbol">¥</i><span id="rateSec">0.0000</span></span>
+          </div>
+          <div class="rate">
+            <span id="rateMinLabel" class="rlabel">per minute</span>
+            <span class="rval"><i id="rateMinSymbol">¥</i><span id="rateMin">0.000</span></span>
+          </div>
+          <div class="rate">
+            <span id="rateHourLabel" class="rlabel">per hour</span>
+            <span class="rval"><i id="rateHourSymbol">¥</i><span id="rateHour">0.00</span></span>
+          </div>
+        </section>
+
+        <section class="actions-grid" aria-label="Time clock">
+          <button id="actionClockIn" class="action" type="button">
+            <svg viewBox="0 0 24 24"><use href="#i-play"></use></svg><span id="actionClockInLabel">Clock in</span>
+          </button>
+          <button id="actionClockOut" class="action" type="button">
+            <svg viewBox="0 0 24 24"><use href="#i-stop"></use></svg><span id="actionClockOutLabel">Clock out</span>
+          </button>
+          <button id="actionOvertime" class="action" type="button">
+            <svg viewBox="0 0 24 24"><use href="#i-flame"></use></svg><span id="actionOvertimeLabel">Start overtime</span>
+          </button>
+          <button id="actionFinish" class="action" type="button">
+            <svg viewBox="0 0 24 24"><use href="#i-check"></use></svg><span id="actionFinishLabel">Finish</span>
+          </button>
+        </section>
+
+        <section class="rail" aria-label="Session timeline">
+          <i id="railRegularFill" class="rail-fill regular" hidden></i>
+          <i id="railOvertimeFill" class="rail-fill overtime" hidden></i>
+          <div id="railIn" class="rail-stop">
+            <span class="node"></span>
+            <span class="stop-text"><span id="railInLabel" class="slabel">In</span><span id="railInTime" class="stime">--:--</span></span>
+          </div>
+          <div id="railOut" class="rail-stop">
+            <span class="node"></span>
+            <span class="stop-text"><span id="railOutLabel" class="slabel">Out</span><span id="railOutTime" class="stime">--:--</span></span>
+          </div>
+          <div id="railOT" class="rail-stop">
+            <span class="node"></span>
+            <span class="stop-text"><span id="railOTLabel" class="slabel">OT</span><span id="railOTTime" class="stime">--:--</span></span>
+          </div>
+          <div id="railDone" class="rail-stop">
+            <span class="node"></span>
+            <span class="stop-text"><span id="railDoneLabel" class="slabel">Done</span><span id="railDoneTime" class="stime">--:--</span></span>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <main id="settingsView" class="view settings-view" hidden>
+      <header class="settings-head">
+        <button id="backButton" class="backbtn" type="button" aria-label="Back">
+          <svg viewBox="0 0 24 24"><use href="#i-left"></use></svg>
+        </button>
+        <div id="settingsTitle" class="settings-title">Settings</div>
+        <button id="doneButton" class="done" type="button">Done</button>
+      </header>
+      <div id="settingsScroll" class="settings-scroll">
+        <div id="prefsLabel" class="section-label">Preferences</div>
+        <div class="prefs-grid">
+          <label class="field-label">
+            <span id="languageLabel">Language</span>
+            <span class="select-shell">
+              <select id="languageSelect" aria-label="Language"></select>
+              <svg viewBox="0 0 24 24"><use href="#i-down"></use></svg>
+            </span>
+          </label>
+          <label class="field-label">
+            <span id="currencyLabel">Currency</span>
+            <span class="select-shell">
+              <select id="currencySelect" aria-label="Currency"></select>
+              <svg viewBox="0 0 24 24"><use href="#i-down"></use></svg>
+            </span>
+          </label>
+        </div>
+
+        <div class="section-label with-caption">
+          <span id="payLabel">Pay</span><span id="savedHint">Saved as you type</span>
+        </div>
+        <div class="pay-card">
+          <div class="pay-row">
+            <span class="picon"><svg viewBox="0 0 24 24"><use href="#i-bank"></use></svg></span>
+            <span id="salaryLabel" class="pname">Monthly salary</span>
+            <input id="salaryInput" class="pinput" inputmode="decimal" aria-label="Monthly salary" />
+            <span id="salarySuffix" class="psuffix">CNY/mo</span>
+          </div>
+          <div class="pay-row">
+            <span class="picon"><svg viewBox="0 0 24 24"><use href="#i-calendar"></use></svg></span>
+            <span id="workdaysLabel" class="pname">Workdays per month</span>
+            <input id="workdaysInput" class="pinput" inputmode="decimal" aria-label="Workdays per month" />
+            <span id="workdaysSuffix" class="psuffix">days</span>
+          </div>
+          <div class="pay-row">
+            <span class="picon"><svg viewBox="0 0 24 24"><use href="#i-clock"></use></svg></span>
+            <span id="hoursLabel" class="pname">Hours per day</span>
+            <input id="hoursInput" class="pinput" inputmode="decimal" aria-label="Hours per day" />
+            <span id="hoursSuffix" class="psuffix">hours</span>
+          </div>
+          <div class="pay-row">
+            <span class="picon ember"><svg viewBox="0 0 24 24"><use href="#i-bolt"></use></svg></span>
+            <span id="overtimeLabel" class="pname">Overtime rate</span>
+            <input id="overtimeInput" class="pinput" inputmode="decimal" aria-label="Overtime rate" />
+            <span id="overtimeSuffix" class="psuffix">CNY/hr</span>
+          </div>
+        </div>
+
+        <div id="ratesLabel" class="section-label">Rates</div>
+        <div class="settings-rates">
+          <div class="rate-cell"><span id="setRateHourLabel" class="k">per hour</span><span id="setRateHour" class="v">¥0.00</span></div>
+          <div class="rate-cell"><span id="setRateMinLabel" class="k">per minute</span><span id="setRateMin" class="v">¥0.000</span></div>
+          <div class="rate-cell"><span id="setRateSecLabel" class="k">per second</span><span id="setRateSec" class="v">¥0.0000</span></div>
+        </div>
+
+        <div id="dataLabel" class="section-label">Data</div>
+        <div class="reset-card">
+          <span class="dicon"><svg viewBox="0 0 24 24"><use href="#i-trash"></use></svg></span>
+          <span class="dtext">
+            <span id="resetTitle" class="dt">Reset everything</span>
+            <span id="resetCaption" class="dc">Current total ¥0.00. This cannot be undone.</span>
+          </span>
+          <button id="clearButton" class="clear-btn" type="button">Clear</button>
+        </div>
+      </div>
+      <div class="fade"></div>
+    </main>
+
+    <div id="toast" class="toast" hidden></div>
+  </div>
+
+  <script src="../core.js"></script>
+  <script src="../format.js"></script>
+  <script src="../i18n.js"></script>
+  <script src="fire.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>

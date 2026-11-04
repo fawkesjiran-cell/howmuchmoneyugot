@@ -1,0 +1,81 @@
+name: Electron Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  macos:
+    runs-on: macos-14
+    defaults:
+      run:
+        working-directory: electron
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: electron/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - name: Build macOS (arm64 + x64)
+        run: npm run pack:mac:release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-release
+          path: electron/release/**/*
+          if-no-files-found: error
+
+  windows:
+    runs-on: windows-2022
+    defaults:
+      run:
+        working-directory: electron
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: electron/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - name: Build Windows x64
+        run: npm run pack:win
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-release
+          path: electron/release/**/*
+          if-no-files-found: error
+
+  publish:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [macos, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify tag matches package version
+        run: node -e "const p=require('./electron/package.json'); if ('v'+p.version !== process.env.GITHUB_REF_NAME) { console.error('Tag does not match electron/package.json version'); process.exit(1); }"
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - name: Generate checksums
+        run: node electron/scripts/checksums.cjs artifacts
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**
+          generate_release_notes: true
+          fail_on_unmatched_files: true

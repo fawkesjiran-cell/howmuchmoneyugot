@@ -88,6 +88,7 @@ swift run HowMuch
 Sources/
   HowMuchCore/    纯计算模型、状态机、收入快照
   HowMuchApp/     SwiftUI 界面、AppKit 菜单栏组件、双语本地化、持久化
+ electron/         Electron 跨平台版（macOS / Windows）、托盘、渲染器和发布配置
 Tests/
   CoreChecks/     无 XCTest 依赖的核心逻辑检查
 Resources/        Info.plist、应用图标
@@ -98,6 +99,38 @@ Vendor/Vortex/    本地内置的 MIT 开源 SwiftUI 粒子引擎
 ## 第三方
 
 加班火焰由 [Vortex](https://github.com/twostraws/Vortex) 驱动，MIT License，版权归 Paul Hudson 所有。项目内已内置对应源码与许可证说明，构建不依赖网络；完整许可见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+
+## 跨平台 Electron 版（macOS / Windows）
+
+仓库里的 `electron/` 是同一套界面与计薪逻辑的 Electron 实现，支持 macOS 和 Windows（Node.js 22.12+）：
+
+```bash
+cd electron
+npm install
+npm start
+
+# 本机打包
+npm run pack:mac   # macOS arm64 + x64，输出 electron/release
+npm run pack:win   # Windows x64，输出 electron/release
+
+# 核心/持久化逻辑测试
+npm test
+```
+
+- 面板固定 392×320，支持托盘弹出、跟随系统/亮色/暗色切换、双语、货币、计薪与重置。
+- macOS 本机打包可产出 `.dmg` / `.zip`；GitHub Release 使用 `.zip`（arm64、x64，避免 CI 对 dmg 工具的依赖）。Windows 产物为 `.exe` 安装包 / `.zip`（x64）。
+- 打包名使用 `How Much Money U Got`（Windows 文件名不能包含 `?`），应用内仍显示 **How much money u got?**。
+- 当前还没有 Apple Developer ID / Windows 代码签名证书，下载后可能出现 Gatekeeper 或 SmartScreen 提示。
+- 发布由 GitHub Actions 自动完成：更新 `electron/package.json` 的版本，打 `v` 前缀 tag 并推送，macOS 与 Windows 构建完成后会创建 GitHub Release。
+
+```bash
+git tag v1.5.0
+git push origin v1.5.0
+```
+
+![Electron 主界面](electron/screenshots/main-light.png)
+
+![Electron 加班火焰](electron/screenshots/overtime-light.png)
 
 ## 开发
 

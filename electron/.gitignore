@@ -1,0 +1,10 @@
+node_modules/
+release/
+.npm-cache/
+.home/
+*.log
+.userdata/
+.pkg-userdata/
+.smoke-userdata/
+.electron-cache/
+.first-run/
