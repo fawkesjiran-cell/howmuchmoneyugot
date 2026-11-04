@@ -14,22 +14,27 @@ TMP="$ROOT/.build/tmp"
 
 mkdir -p "$BUILD_HOME" "$MODULE_CACHE" "$SWIFT_CACHE" "$TMP" "$ROOT/.build/cache" "$ROOT/.build/config" "$ROOT/.build/security"
 
-echo "==> Building $EXECUTABLE (release)"
-HOME="$BUILD_HOME" \
-TMPDIR="$TMP" \
-CLANG_MODULE_CACHE_PATH="$MODULE_CACHE" \
-SWIFT_MODULE_CACHE_PATH="$SWIFT_CACHE" \
-swift build \
-    -c release \
-    --product "$EXECUTABLE" \
-    --disable-sandbox \
-    --cache-path "$ROOT/.build/cache" \
-    --config-path "$ROOT/.build/config" \
-    --security-path "$ROOT/.build/security"
+if [[ -n "${HOWMUCH_BIN:-}" ]]; then
+    BIN="$HOWMUCH_BIN"
+    echo "==> Using prebuilt universal executable"
+else
+    echo "==> Building $EXECUTABLE (release)"
+    HOME="$BUILD_HOME" \
+    TMPDIR="$TMP" \
+    CLANG_MODULE_CACHE_PATH="$MODULE_CACHE" \
+    SWIFT_MODULE_CACHE_PATH="$SWIFT_CACHE" \
+    swift build \
+        -c release \
+        --product "$EXECUTABLE" \
+        --disable-sandbox \
+        --cache-path "$ROOT/.build/cache" \
+        --config-path "$ROOT/.build/config" \
+        --security-path "$ROOT/.build/security"
 
-BIN="$ROOT/.build/release/$EXECUTABLE"
-if [[ ! -f "$BIN" ]]; then
-    BIN="$(find "$ROOT/.build" -type f -name "$EXECUTABLE" -perm -111 | head -n 1)"
+    BIN="$ROOT/.build/release/$EXECUTABLE"
+    if [[ ! -f "$BIN" ]]; then
+        BIN="$(find "$ROOT/.build" -type f -name "$EXECUTABLE" -perm -111 | head -n 1)"
+    fi
 fi
 if [[ -z "${BIN:-}" || ! -f "$BIN" ]]; then
     echo "Build succeeded but executable was not found." >&2
@@ -49,8 +54,18 @@ cp -R "$ROOT/Resources/Fonts" "$APP/Contents/Resources/Fonts"
 cp "$ROOT/THIRD_PARTY_NOTICES.md" "$APP/Contents/Resources/THIRD_PARTY_NOTICES.md"
 printf 'APPL????' > "$APP/Contents/PkgInfo"
 
-echo "==> Signing (ad-hoc)"
-codesign --force --deep --sign - --timestamp=none "$APP"
+IDENTITY="${CODESIGN_IDENTITY:--}"
+if [[ "$IDENTITY" == "-" ]]; then
+    echo "==> Signing (ad-hoc)"
+    codesign --force --deep --sign - --timestamp=none "$APP"
+else
+    echo "==> Signing with $IDENTITY"
+    ENTITLEMENTS=()
+    if [[ -n "${CODESIGN_ENTITLEMENTS:-}" ]]; then
+        ENTITLEMENTS=(--entitlements "$CODESIGN_ENTITLEMENTS")
+    fi
+    codesign --force --deep --options runtime --timestamp --sign "$IDENTITY" "${ENTITLEMENTS[@]}" "$APP"
+fi
 codesign --verify --deep --strict --verbose=2 "$APP"
 
 echo "==> Done"

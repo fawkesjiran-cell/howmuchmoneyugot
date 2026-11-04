@@ -1,4 +1,4 @@
-appId: com.fawkesjiran.jinzhang
+appId: com.fawkesjiran.jinzhang.electron
 productName: How Much Money U Got
 asar: true
 npmRebuild: false
@@ -19,12 +19,14 @@ extraResources:
     to: THIRD_PARTY_NOTICES.md
 artifactName: How-Much-Money-U-Got-${version}-${os}-${arch}.${ext}
 mac:
+  artifactName: How-Much-Money-U-Got-${version}-macOS-Electron-${arch}.${ext}
   category: public.app-category.productivity
   icon: build/icon.icns
   minimumSystemVersion: "12.0"
-  identity: null
-  hardenedRuntime: false
+  hardenedRuntime: true
   gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
   target:
     - target: dmg
       arch:
@@ -37,9 +39,13 @@ mac:
   extendInfo:
     LSUIElement: true
 win:
+  artifactName: How-Much-Money-U-Got-${version}-Windows-Electron-${arch}.${ext}
   icon: build/icon.ico
   target:
     - target: nsis
+      arch:
+        - x64
+    - target: portable
       arch:
         - x64
     - target: zip

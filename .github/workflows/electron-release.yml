@@ -1,4 +1,4 @@
-name: Electron Release
+name: Desktop Release
 
 on:
   push:
@@ -9,13 +9,73 @@ permissions:
   contents: write
 
 jobs:
+  macos-swift:
+    runs-on: macos-14
+    env:
+      MAC_CERTIFICATE_P12: ${{ secrets.MAC_CERTIFICATE_P12 }}
+      MAC_CERTIFICATE_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify Swift app version matches tag
+        run: |
+          set -euo pipefail
+          VERSION="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Resources/Info.plist)"
+          if [[ "${GITHUB_REF_TYPE:-}" == "tag" && "v${VERSION}" != "${GITHUB_REF_NAME}" ]]; then
+            echo "Tag does not match Resources/Info.plist version: v${VERSION}" >&2
+            exit 1
+          fi
+      - name: Import Developer ID certificate (optional)
+        if: env.MAC_CERTIFICATE_P12 != ''
+        env:
+          KEYCHAIN_PASSWORD: ${{ secrets.MAC_KEYCHAIN_PASSWORD }}
+        run: |
+          set -euo pipefail
+          KEYCHAIN="$RUNNER_TEMP/app-signing.keychain-db"
+          CERT="$RUNNER_TEMP/developer-id.p12"
+          echo "$MAC_CERTIFICATE_P12" | base64 --decode > "$CERT"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security import "$CERT" -k "$KEYCHAIN" -P "$MAC_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security list-keychains -d user -s "$KEYCHAIN"
+          security default-keychain -s "$KEYCHAIN"
+          IDENTITY="$(security find-identity -v -p codesigning "$KEYCHAIN" | sed -n 's/.*"\(Developer ID Application[^"]*\)".*/\1/p' | head -n 1)"
+          if [[ -z "$IDENTITY" ]]; then
+            echo "No Developer ID Application identity found in the imported certificate." >&2
+            exit 1
+          fi
+          echo "CODESIGN_IDENTITY=$IDENTITY" >> "$GITHUB_ENV"
+      - name: Build universal Swift app
+        run: |
+          bash Scripts/check.sh
+          bash Scripts/build_universal_app.sh
+      - name: Package Swift app
+        run: bash Scripts/package_swift_app.sh
+      - name: Notarize and staple Swift app
+        if: env.MAC_CERTIFICATE_P12 != '' && env.APPLE_ID != '' && env.APPLE_APP_SPECIFIC_PASSWORD != '' && env.APPLE_TEAM_ID != ''
+        run: bash Scripts/notarize_swift_app.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-swift-release
+          path: dist/*Swift.zip
+          if-no-files-found: error
+
   macos:
     runs-on: macos-14
     defaults:
       run:
         working-directory: electron
     env:
-      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+      CSC_IDENTITY_AUTO_DISCOVERY: "true"
+      MAC_CERTIFICATE_P12: ${{ secrets.MAC_CERTIFICATE_P12 }}
+      MAC_CERTIFICATE_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -25,12 +85,33 @@ jobs:
           cache-dependency-path: electron/package-lock.json
       - run: npm ci
       - run: npm test
-      - name: Build macOS (arm64 + x64)
+      - name: Import Developer ID certificate (optional)
+        if: env.MAC_CERTIFICATE_P12 != ''
+        env:
+          KEYCHAIN_PASSWORD: ${{ secrets.MAC_KEYCHAIN_PASSWORD }}
+        run: |
+          set -euo pipefail
+          KEYCHAIN="$RUNNER_TEMP/app-signing.keychain-db"
+          CERT="$RUNNER_TEMP/developer-id.p12"
+          echo "$MAC_CERTIFICATE_P12" | base64 --decode > "$CERT"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security import "$CERT" -k "$KEYCHAIN" -P "$MAC_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security list-keychains -d user -s "$KEYCHAIN"
+          security default-keychain -s "$KEYCHAIN"
+      - name: Build macOS Electron (universal, signed when secrets exist)
         run: npm run pack:mac:release
+      - name: Notarize and staple macOS app
+        if: env.MAC_CERTIFICATE_P12 != '' && env.APPLE_ID != '' && env.APPLE_APP_SPECIFIC_PASSWORD != '' && env.APPLE_TEAM_ID != ''
+        run: bash scripts/notarize-mac.sh
       - uses: actions/upload-artifact@v4
         with:
           name: macos-release
-          path: electron/release/**/*
+          path: |
+            electron/release/*.zip
+            electron/release/*.dmg
           if-no-files-found: error
 
   windows:
@@ -38,8 +119,6 @@ jobs:
     defaults:
       run:
         working-directory: electron
-    env:
-      CSC_IDENTITY_AUTO_DISCOVERY: "false"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -49,17 +128,22 @@ jobs:
           cache-dependency-path: electron/package-lock.json
       - run: npm ci
       - run: npm test
-      - name: Build Windows x64
+      - name: Build Windows x64 (NSIS + portable + zip)
+        env:
+          CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
         run: npm run pack:win
       - uses: actions/upload-artifact@v4
         with:
           name: windows-release
-          path: electron/release/**/*
+          path: |
+            electron/release/*.exe
+            electron/release/*.zip
           if-no-files-found: error
 
   publish:
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [macos, windows]
+    needs: [macos-swift, macos, windows]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
