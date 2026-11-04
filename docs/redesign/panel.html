@@ -1,0 +1,1240 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>How much money u got? — Pine Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --canvas: #F3F6F4;
+    --sunken: #E8EFEA;
+    --surface: #FFFFFF;
+    --surface-muted: #EEF3EF;
+    --line: #DCE5DF;
+    --line-strong: #C6D3CA;
+    --ink: #0E1F18;
+    --muted: #55685E;
+    --faint: #5F746A;
+    --primary: #146B4A;
+    --primary-hover: #0D5238;
+    --primary-soft: #DCEFE4;
+    --on-primary: #FFFFFF;
+    --ember: #A5480A;
+    --ember-soft: #FBEBDC;
+    --on-ember: #FFFFFF;
+    --danger: #B3261E;
+    --danger-soft: #FBEAE8;
+    --stage: #E6ECE7;
+    --stage-2: #DDE5DF;
+    --shadow: 0 18px 44px rgba(14, 31, 24, .16), 0 2px 6px rgba(14, 31, 24, .06);
+    --disabled: color-mix(in srgb, var(--muted) 55%, transparent);
+  }
+
+  [data-theme="dark"] {
+    --canvas: #091310;
+    --sunken: #060E0B;
+    --surface: #111E18;
+    --surface-muted: #0D1813;
+    --line: #263A30;
+    --line-strong: #345044;
+    --ink: #EAF2ED;
+    --muted: #9FB3A7;
+    --faint: #7C9185;
+    --primary: #5BD6A0;
+    --primary-hover: #86E9BC;
+    --primary-soft: #123528;
+    --on-primary: #06231A;
+    --ember: #F0A868;
+    --ember-soft: #2A1B0F;
+    --on-ember: #1A0F06;
+    --danger: #FF8177;
+    --danger-soft: #2B1513;
+    --stage: #060C09;
+    --stage-2: #0B1410;
+    --shadow: 0 24px 60px rgba(0, 0, 0, .62), 0 2px 8px rgba(0, 0, 0, .4);
+    --disabled: color-mix(in srgb, var(--muted) 55%, transparent);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  [hidden] { display: none !important; }
+
+  html, body { background: transparent; }
+
+  body {
+    width: 456px;
+    height: 384px;
+    display: grid;
+    place-items: center;
+    background:
+      radial-gradient(120% 100% at 50% 0%, var(--stage) 0%, var(--stage-2) 100%);
+    font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body.zoom2 {
+    width: 912px;
+    height: 768px;
+  }
+
+  body.zoom2 .panel {
+    transform: scale(2);
+  }
+
+  body.bare {
+    width: 392px;
+    height: 320px;
+    background: var(--canvas);
+    display: block;
+  }
+
+  body.bare .panel {
+    border-radius: 0;
+    box-shadow: none;
+    outline: none;
+  }
+
+  .panel {
+    position: relative;
+    width: 392px;
+    height: 320px;
+    background: var(--canvas);
+    border-radius: 12px;
+    overflow: hidden;
+    outline: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+    outline-offset: -1px;
+    box-shadow: var(--shadow);
+  }
+
+  .num, .time, .rval, .stime, .pct, .setval {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  /* ---------- shared header ---------- */
+
+  .head {
+    height: 36px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 16px;
+  }
+
+  .mark {
+    width: 26px;
+    height: 26px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--primary);
+    color: var(--on-primary);
+    display: grid;
+    place-items: center;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    padding-bottom: 1px;
+  }
+
+  .wordmark {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.012em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--ink);
+  }
+
+  .head-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .iconbtn {
+    width: 28px;
+    height: 28px;
+    flex: none;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--muted);
+    display: grid;
+    place-items: center;
+    cursor: default;
+  }
+
+  .iconbtn svg { width: 13px; height: 13px; }
+
+  .iconbtn:hover { background: var(--surface-muted); }
+
+  /* ---------- main ---------- */
+
+  #main-screen {
+    height: 320px;
+    padding: 12px 16px;
+    display: grid;
+    grid-template-rows: 36px 86px 22px 44px 40px 28px;
+    row-gap: 8px;
+  }
+
+  .balance { display: flex; flex-direction: column; justify-content: flex-end; min-height: 0; }
+
+  .status {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 9.5px;
+    font-weight: 500;
+    line-height: 12px;
+    letter-spacing: .01em;
+    color: var(--muted);
+    margin-bottom: 7px;
+    white-space: nowrap;
+  }
+
+  .dot {
+    width: 5px;
+    height: 5px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--primary);
+  }
+
+  .status .sep { color: var(--faint); opacity: .7; }
+
+  .ot-chip {
+    display: inline-flex;
+    align-items: center;
+    height: 14px;
+    padding: 0 5px;
+    margin-left: 1px;
+    border-radius: 4px;
+    background: var(--ember-soft);
+    color: var(--ember);
+    font-size: 8px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: .01em;
+  }
+
+  .amount-wrap { position: relative; height: 46px; }
+
+  .fire-amount {
+    display: block;
+    width: 340px;
+    height: 46px;
+    overflow: visible;
+  }
+
+  .amount {
+    display: flex;
+    align-items: flex-start;
+    gap: 2px;
+    height: 46px;
+    line-height: 46px;
+    letter-spacing: -0.035em;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+
+  .amount .cur {
+    font-size: 20px;
+    line-height: 25px;
+    font-weight: 600;
+    letter-spacing: 0;
+    color: var(--primary);
+    margin-top: 1px;
+  }
+
+  .amount .num {
+    font-size: 46px;
+    font-weight: 600;
+    line-height: 46px;
+  }
+
+  .meta {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 5px;
+    font-size: 10.5px;
+    font-weight: 500;
+    line-height: 14px;
+    color: var(--faint);
+    white-space: nowrap;
+  }
+
+  .meta .time { color: var(--muted); font-weight: 500; }
+  .meta .mdot { width: 3px; height: 3px; border-radius: 50%; background: var(--faint); opacity: .55; }
+
+  .target { display: flex; flex-direction: column; justify-content: center; gap: 5px; }
+
+  .target-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 9.5px;
+    line-height: 12px;
+    color: var(--muted);
+  }
+
+  .target-row .pct { font-size: 10px; font-weight: 600; color: var(--ink); letter-spacing: -.01em; }
+
+  .track {
+    height: 4px;
+    border-radius: 2px;
+    background: var(--sunken);
+    overflow: hidden;
+  }
+
+  .track > i {
+    display: block;
+    height: 100%;
+    width: 68%;
+    border-radius: 2px;
+    background: var(--primary);
+  }
+
+  .rates {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .rate {
+    padding: 6px 11px 6px 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1px;
+    min-width: 0;
+  }
+
+  .rate + .rate { border-left: 1px solid var(--line); }
+
+  .rlabel {
+    font-size: 9px;
+    font-weight: 500;
+    line-height: 11px;
+    letter-spacing: .01em;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .rval {
+    font-size: 14.5px;
+    font-weight: 600;
+    line-height: 18px;
+    letter-spacing: -.015em;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .rval i {
+    font-style: normal;
+    font-size: 8.5px;
+    font-weight: 500;
+    color: var(--faint);
+    margin-right: 1px;
+  }
+
+  .rate.hourly .rval { color: var(--ink); }
+  .rate.hourly .rval i { color: var(--muted); }
+
+  .actions {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+
+  .action {
+    height: 40px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--disabled);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 12px;
+    letter-spacing: -.005em;
+    white-space: nowrap;
+    cursor: default;
+  }
+
+  .action svg { width: 12px; height: 12px; flex: none; }
+
+  .action.primary {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: var(--on-primary);
+    font-weight: 600;
+  }
+
+  .action.ember { border-color: color-mix(in srgb, var(--ember) 20%, var(--line)); }
+  .action.ember svg { color: color-mix(in srgb, var(--ember) 55%, transparent); }
+
+  .rail {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    align-content: start;
+    padding-top: 2px;
+  }
+
+  .rail::before {
+    content: "";
+    position: absolute;
+    top: 5px;
+    left: 12.5%;
+    right: 12.5%;
+    height: 1px;
+    background: var(--line);
+  }
+
+  .stop {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .node {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--line-strong);
+    position: relative;
+    z-index: 1;
+  }
+
+  .stop.active .node {
+    background: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-soft);
+  }
+
+  .stop-text {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    white-space: nowrap;
+    line-height: 13px;
+  }
+
+  .stop-text .slabel { font-size: 8.5px; font-weight: 500; letter-spacing: .01em; color: var(--faint); }
+  .stop-text .stime { font-size: 10.5px; font-weight: 600; letter-spacing: -.01em; color: var(--muted); }
+  .stop.active .stop-text .slabel { color: var(--muted); }
+  .stop.active .stop-text .stime { color: var(--ink); }
+  .stop.future .node { background: var(--line); }
+
+  .rail-progress {
+    position: absolute;
+    top: 5px;
+    left: 12.5%;
+    width: 50%;
+    height: 1px;
+    z-index: 1;
+    background: linear-gradient(
+      90deg,
+      var(--primary) 0%,
+      var(--primary) 50%,
+      var(--ember) 50%,
+      var(--ember) 100%
+    );
+  }
+
+  /* ---------- overtime ---------- */
+
+  .panel.overtime .status .state { color: var(--ember); font-weight: 600; }
+
+  .panel.overtime .dot {
+    background: var(--ember);
+    animation: emberPulse 2.4s ease-out infinite;
+  }
+
+  @keyframes emberPulse {
+    0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ember) 34%, transparent); }
+    70% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--ember) 0%, transparent); }
+    100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ember) 0%, transparent); }
+  }
+
+  .panel.overtime .track > i { width: 100%; background: var(--ember); }
+  .panel.overtime .pct { color: var(--ember); }
+
+  .panel.overtime .rates { border-color: color-mix(in srgb, var(--ember) 18%, var(--line)); }
+
+  .panel.overtime .rate .rval,
+  .panel.overtime .rate .rval i,
+  .panel.overtime .rate.hourly .rval,
+  .panel.overtime .rate.hourly .rval i { color: var(--ember); }
+
+  .panel.overtime .action.primary {
+    border-color: var(--ember);
+    background: var(--ember);
+    color: var(--on-ember);
+  }
+
+  .panel.overtime .action.primary svg { color: var(--on-ember); }
+
+  .panel.overtime .stop.complete .node { background: var(--primary); }
+  .panel.overtime .stop.complete .stime { color: var(--ink); }
+
+  .panel.overtime .stop.ot .node {
+    background: var(--ember);
+    box-shadow: 0 0 0 3px var(--ember-soft);
+  }
+  .panel.overtime .stop.ot .slabel { color: var(--muted); }
+  .panel.overtime .stop.ot .stime { color: var(--ember); }
+
+  .panel.overtime .fire-amount {
+    filter:
+      drop-shadow(0 0 4px color-mix(in srgb, var(--ember) 22%, transparent))
+      drop-shadow(0 1px 0 rgba(255, 255, 255, .22));
+    transform-origin: left center;
+    animation: numberBreath 3.8s ease-in-out infinite;
+  }
+
+  @keyframes numberBreath {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.008); }
+  }
+
+  [data-theme="dark"] .panel.overtime .fire-amount {
+    filter:
+      drop-shadow(0 0 6px color-mix(in srgb, var(--ember) 36%, transparent))
+      drop-shadow(0 0 16px color-mix(in srgb, var(--ember) 18%, transparent));
+  }
+
+  .freeze .panel.overtime .dot {
+    animation: none;
+    box-shadow: 0 0 0 3px var(--ember-soft);
+  }
+
+  .freeze .panel.overtime .fire-amount { animation: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .panel.overtime .dot { animation: none; }
+    .panel.overtime .fire-amount { animation: none; }
+  }
+
+  /* ---------- settings ---------- */
+
+  #settings-screen {
+    height: 320px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #settings-screen .head { padding: 10px 16px 6px; height: 52px; }
+
+  .backbtn {
+    width: 28px;
+    height: 28px;
+    margin-left: -6px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--ink);
+    display: grid;
+    place-items: center;
+  }
+
+  .backbtn svg { width: 14px; height: 14px; }
+
+  .set-title { font-size: 15px; font-weight: 600; letter-spacing: -.015em; }
+
+  .done {
+    margin-left: auto;
+    border: 0;
+    background: transparent;
+    color: var(--primary);
+    font-family: inherit;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: -.005em;
+    padding: 5px 6px;
+    border-radius: 7px;
+  }
+
+  .done:hover { background: var(--primary-soft); }
+
+  .set-scroll {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    padding: 0 16px 24px;
+    overflow: hidden;
+  }
+
+  .seclabel {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    height: 14px;
+    line-height: 14px;
+    margin: 4px 0 4px;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: -.01em;
+    color: var(--ink);
+  }
+
+  .seclabel span {
+    font-size: 8.5px;
+    font-weight: 500;
+    color: var(--faint);
+    letter-spacing: .01em;
+  }
+
+  .prefs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .field { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+
+  .flabel {
+    font-size: 9px;
+    font-weight: 500;
+    line-height: 11px;
+    letter-spacing: .01em;
+    color: var(--muted);
+  }
+
+  .select {
+    height: 31px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 9px;
+    font-family: inherit;
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: -.005em;
+    text-align: left;
+  }
+
+  .select .chev { margin-left: auto; color: var(--faint); display: grid; place-items: center; }
+  .select svg { width: 11px; height: 11px; }
+
+  .paycard {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+
+  .payrow {
+    height: 36px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 10px;
+  }
+
+  .payrow + .payrow { border-top: 1px solid var(--line); }
+
+  .picon {
+    width: 24px;
+    height: 24px;
+    flex: none;
+    border-radius: 7px;
+    display: grid;
+    place-items: center;
+    background: color-mix(in srgb, var(--primary) 10%, transparent);
+    color: var(--primary);
+  }
+
+  .picon svg { width: 12px; height: 12px; }
+
+  .picon.ember { background: var(--ember-soft); color: var(--ember); }
+
+  .pname {
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: -.005em;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .pspacer { flex: 1; }
+
+  .pinput {
+    width: 68px;
+    height: 25px;
+    flex: none;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    background: var(--sunken);
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: -.01em;
+    text-align: right;
+    padding: 0 7px;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  .pinput.focus {
+    background: var(--surface);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 18%, transparent);
+  }
+
+  .psuffix {
+    width: 38px;
+    flex: none;
+    font-size: 8.5px;
+    font-weight: 500;
+    letter-spacing: .01em;
+    color: var(--faint);
+    white-space: nowrap;
+  }
+
+  .psuffix.wide { width: 46px; }
+
+  .fade {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 16px;
+    background: linear-gradient(to bottom, transparent, var(--canvas) 78%);
+    pointer-events: none;
+  }
+
+  /* settings lower section, used in the scrolled state */
+  .ratesgrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+
+  .ratecell { padding: 8px 11px; display: flex; flex-direction: column; gap: 2px; }
+  .ratecell + .ratecell { border-left: 1px solid var(--line); }
+  .ratecell .k { font-size: 9px; color: var(--muted); line-height: 11px; }
+  .ratecell .v { font-size: 13.5px; font-weight: 600; letter-spacing: -.015em; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+  .datacard {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px;
+    border: 1px solid color-mix(in srgb, var(--danger) 20%, var(--line));
+    border-radius: 12px;
+    background: var(--danger-soft);
+  }
+
+  .dicon {
+    width: 26px;
+    height: 26px;
+    flex: none;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    background: color-mix(in srgb, var(--danger) 12%, transparent);
+    color: var(--danger);
+  }
+
+  .dicon svg { width: 12px; height: 12px; }
+
+  .dtext { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .dtext .t { font-size: 11.5px; font-weight: 600; color: var(--ink); letter-spacing: -.005em; }
+  .dtext .c { font-size: 9px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .dbtn {
+    margin-left: auto;
+    flex: none;
+    border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent);
+    background: transparent;
+    color: var(--danger);
+    font-family: inherit;
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 7px;
+  }
+
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="i-reset" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" />
+    </g>
+    <g id="i-gear" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12.2 2h-.4a2 2 0 0 0-2 2v.2a2 2 0 0 1-1 1.7l-.4.3a2 2 0 0 1-2 0l-.2-.1a2 2 0 0 0-2.7.7l-.2.4a2 2 0 0 0 .7 2.7l.2.1a2 2 0 0 1 1 1.7v.5a2 2 0 0 1-1 1.8l-.2.1a2 2 0 0 0-.7 2.7l.2.4a2 2 0 0 0 2.7.7l.2-.1a2 2 0 0 1 2 0l.4.3a2 2 0 0 1 1 1.7v.2a2 2 0 0 0 2 2h.4a2 2 0 0 0 2-2v-.2a2 2 0 0 1 1-1.7l.4-.3a2 2 0 0 1 2 0l.2.1a2 2 0 0 0 2.7-.7l.2-.4a2 2 0 0 0-.7-2.7l-.2-.1a2 2 0 0 1-1-1.8v-.5a2 2 0 0 1 1-1.7l.2-.1a2 2 0 0 0 .7-2.7l-.2-.4a2 2 0 0 0-2.7-.7l-.2.1a2 2 0 0 1-2 0l-.4-.3a2 2 0 0 1-1-1.7V4a2 2 0 0 0-2-2z" />
+      <circle cx="12" cy="12" r="3" />
+    </g>
+    <path id="i-play" d="M7 4.5 19 12 7 19.5z" fill="currentColor" />
+    <rect id="i-stop" x="6.5" y="6.5" width="11" height="11" rx="1.2" fill="currentColor" />
+    <g id="i-flame" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.4-.5-2-1-3-1.1-2.1-.2-4 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.2.4-2.3 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
+    </g>
+    <g id="i-check" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></g>
+    <g id="i-left" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6" /></g>
+    <g id="i-down" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></g>
+    <g id="i-bank" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2.5" y="6" width="19" height="12" rx="2" /><circle cx="12" cy="12" r="2" /><path d="M6.5 12h.01M17.5 12h.01" />
+    </g>
+    <g id="i-cal" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3.5" y="4.5" width="17" height="16" rx="2" /><path d="M16 2.5v4M8 2.5v4M3.5 10h17" />
+    </g>
+    <g id="i-clock" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 1.8" />
+    </g>
+    <g id="i-bolt" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z" />
+    </g>
+    <g id="i-globe" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="8.5" /><path d="M3.5 12h17M12 3.5a14 14 0 0 1 0 17a14 14 0 0 1 0-17" />
+    </g>
+    <g id="i-trash" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3.5 6h17M9 6V4h6v2M18.5 6l-1 14h-11L5.5 6" /><path d="M10 11v5M14 11v5" />
+    </g>
+  </defs>
+</svg>
+
+<!-- ============================ MAIN ============================ -->
+<main id="main-screen" class="panel" aria-label="How much money u got? earnings panel">
+  <header class="head">
+    <div class="mark" aria-hidden="true">¥</div>
+    <div class="wordmark">How much money u got?</div>
+    <div class="head-actions">
+      <button class="iconbtn" aria-label="Reset session" title="Reset session"><svg viewBox="0 0 24 24"><use href="#i-reset" /></svg></button>
+      <button class="iconbtn" aria-label="Settings" title="Settings"><svg viewBox="0 0 24 24"><use href="#i-gear" /></svg></button>
+    </div>
+  </header>
+
+  <section class="balance" aria-label="Earned this session">
+    <div class="status"><span class="dot"></span><span>This session</span><span class="sep">·</span><span class="state" id="sessionState">earning regular pay</span><span class="ot-chip" id="otChip" hidden>×1.5</span></div>
+    <div class="amount-wrap">
+      <div class="amount" id="normalAmount"><span class="cur">¥</span><span class="num">231.54</span></div>
+      <canvas class="fire-amount" id="fireAmount" width="680" height="92" hidden role="img" aria-label="¥456.39 earned this session, numerals on fire"></canvas>
+    </div>
+    <div class="meta"><span class="time" id="sessionTime">05:26:53</span><span class="mdot"></span><span id="allTime">All time ¥4,812.90</span></div>
+  </section>
+
+  <div class="target">
+    <div class="target-row"><span>Daily target · ¥340.00</span><span class="pct" id="targetPct">68%</span></div>
+    <div class="track"><i id="targetFill"></i></div>
+  </div>
+
+  <div class="rates" aria-label="Current rates">
+    <div class="rate"><span class="rlabel">per second</span><span class="rval"><i>¥</i><span id="rateSec">0.0118</span></span></div>
+    <div class="rate"><span class="rlabel">per minute</span><span class="rval"><i>¥</i><span id="rateMin">0.708</span></span></div>
+    <div class="rate hourly"><span class="rlabel">per hour</span><span class="rval"><i>¥</i><span id="rateHr">42.50</span></span></div>
+  </div>
+
+  <div class="actions" aria-label="Time clock">
+    <button class="action" disabled><svg viewBox="0 0 24 24"><use href="#i-play" /></svg><span>Clock in</span></button>
+    <button class="action primary" id="actionOut"><svg viewBox="0 0 24 24"><use href="#i-stop" /></svg><span>Clock out</span></button>
+    <button class="action ember" id="actionOT" disabled><svg viewBox="0 0 24 24"><use href="#i-flame" /></svg><span>Start overtime</span></button>
+    <button class="action" id="actionFinish" disabled><svg viewBox="0 0 24 24"><use href="#i-check" /></svg><span>Finish</span></button>
+  </div>
+
+  <div class="rail" aria-label="Session timeline">
+    <i class="rail-progress" id="railProgress" hidden></i>
+    <div class="stop active" id="stopIn"><span class="node"></span><span class="stop-text"><span class="slabel">In</span><span class="stime">09:02</span></span></div>
+    <div class="stop future" id="stopOut"><span class="node"></span><span class="stop-text"><span class="slabel">Out</span><span class="stime">--:--</span></span></div>
+    <div class="stop future" id="stopOT"><span class="node"></span><span class="stop-text"><span class="slabel">OT</span><span class="stime">--:--</span></span></div>
+    <div class="stop future" id="stopDone"><span class="node"></span><span class="stop-text"><span class="slabel">Done</span><span class="stime">--:--</span></span></div>
+  </div>
+</main>
+
+<!-- ========================== SETTINGS ========================== -->
+<main id="settings-screen" class="panel" aria-label="Settings" hidden>
+  <header class="head">
+    <button class="backbtn" aria-label="Back"><svg viewBox="0 0 24 24"><use href="#i-left" /></svg></button>
+    <div class="set-title">Settings</div>
+    <button class="done">Done</button>
+  </header>
+
+  <div class="set-scroll">
+    <div class="seclabel">Preferences</div>
+    <div class="prefs">
+      <div class="field">
+        <span class="flabel">Language</span>
+        <button class="select">English <span class="chev"><svg viewBox="0 0 24 24"><use href="#i-down" /></svg></span></button>
+      </div>
+      <div class="field">
+        <span class="flabel">Currency</span>
+        <button class="select">CNY ¥ <span class="chev"><svg viewBox="0 0 24 24"><use href="#i-down" /></svg></span></button>
+      </div>
+    </div>
+
+    <div class="seclabel">Pay <span>saved as you type</span></div>
+    <div class="paycard">
+      <div class="payrow">
+        <span class="picon"><svg viewBox="0 0 24 24"><use href="#i-bank" /></svg></span>
+        <span class="pname">Monthly salary</span><span class="pspacer"></span>
+        <input class="pinput" value="7,480" readonly aria-label="Monthly salary" />
+        <span class="psuffix wide">CNY/mo</span>
+      </div>
+      <div class="payrow">
+        <span class="picon"><svg viewBox="0 0 24 24"><use href="#i-cal" /></svg></span>
+        <span class="pname">Workdays per month</span><span class="pspacer"></span>
+        <input class="pinput" value="22" readonly aria-label="Workdays per month" />
+        <span class="psuffix">days</span>
+      </div>
+      <div class="payrow">
+        <span class="picon"><svg viewBox="0 0 24 24"><use href="#i-clock" /></svg></span>
+        <span class="pname">Hours per day</span><span class="pspacer"></span>
+        <input class="pinput focus" value="8" readonly aria-label="Hours per day" />
+        <span class="psuffix">hours</span>
+      </div>
+      <div class="payrow">
+        <span class="picon ember"><svg viewBox="0 0 24 24"><use href="#i-bolt" /></svg></span>
+        <span class="pname">Overtime rate</span><span class="pspacer"></span>
+        <input class="pinput" value="63.75" readonly aria-label="Overtime rate" />
+        <span class="psuffix wide">CNY/hr</span>
+      </div>
+    </div>
+
+    <div class="seclabel">Rates</div>
+    <div class="ratesgrid">
+      <div class="ratecell"><span class="k">per hour</span><span class="v">¥42.50</span></div>
+      <div class="ratecell"><span class="k">per minute</span><span class="v">¥0.708</span></div>
+      <div class="ratecell"><span class="k">per second</span><span class="v">¥0.0118</span></div>
+    </div>
+
+    <div class="seclabel">Data</div>
+    <div class="datacard">
+      <span class="dicon"><svg viewBox="0 0 24 24"><use href="#i-trash" /></svg></span>
+      <span class="dtext"><span class="t">Reset everything</span><span class="c">All-time total ¥4,812.90. This cannot be undone.</span></span>
+      <button class="dbtn">Clear</button>
+    </div>
+  </div>
+  <div class="fade"></div>
+</main>
+
+<script>
+  const params = new URLSearchParams(location.search);
+  const theme = params.get("theme") === "dark" ? "dark" : "light";
+  const screen = params.get("screen") === "settings" ? "settings" : "main";
+  const bare = params.get("bare") === "1";
+  const zoom2 = params.get("zoom") === "2";
+  const scrolled = params.get("scroll") === "1";
+
+  document.documentElement.dataset.theme = theme;
+  document.body.classList.toggle("bare", bare);
+  document.body.classList.toggle("zoom2", zoom2 && !bare);
+  document.body.classList.toggle("freeze", params.get("freeze") === "1");
+  document.getElementById("main-screen").hidden = screen !== "main";
+  document.getElementById("settings-screen").hidden = screen !== "settings";
+
+  const overtime = screen === "main" &&
+    (params.get("mode") === "overtime" || params.get("state") === "overtime");
+
+  if (overtime) {
+    const main = document.getElementById("main-screen");
+    main.classList.add("overtime");
+
+    document.getElementById("sessionState").textContent = "earning overtime";
+    document.getElementById("otChip").hidden = false;
+    document.getElementById("sessionTime").textContent = "09:59:53";
+    document.getElementById("allTime").textContent = "All time ¥5,037.75";
+    document.getElementById("targetPct").textContent = "134%";
+    document.getElementById("targetFill").style.width = "100%";
+    document.getElementById("rateSec").textContent = "0.0177";
+    document.getElementById("rateMin").textContent = "1.063";
+    document.getElementById("rateHr").textContent = "63.75";
+
+    const out = document.getElementById("actionOut");
+    out.classList.remove("primary");
+    out.disabled = true;
+
+    const ot = document.getElementById("actionOT");
+    ot.classList.remove("ember");
+    ot.disabled = true;
+
+    const finish = document.getElementById("actionFinish");
+    finish.disabled = false;
+    finish.classList.add("primary");
+
+    const setStop = (id, className, time) => {
+      const el = document.getElementById(id);
+      el.className = className;
+      el.querySelector(".stime").textContent = time;
+    };
+    setStop("stopIn", "stop complete", "09:02");
+    setStop("stopOut", "stop complete", "17:30");
+    setStop("stopOT", "stop active ot", "17:31");
+    setStop("stopDone", "stop future", "--:--");
+    document.getElementById("railProgress").hidden = false;
+
+    document.getElementById("normalAmount").hidden = true;
+    document.getElementById("fireAmount").hidden = false;
+    startFire();
+  }
+
+  if (screen === "settings" && scrolled) {
+    const box = document.querySelector(".set-scroll");
+    box.scrollTop = box.scrollHeight;
+    document.fonts.ready.then(() => {
+      requestAnimationFrame(() => { box.scrollTop = box.scrollHeight; });
+    });
+  }
+
+  function startFire() {
+    const canvas = document.getElementById("fireAmount");
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const W = 340;
+    const H = 46;
+    const DPR = 2;
+    const amount = "456.39";
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const freeze = params.get("freeze") === "1" || reduce;
+
+    let symW = 12;
+    let numW = 150;
+    let span = 170;
+
+    canvas.width = W * DPR;
+    canvas.height = H * DPR;
+    canvas.style.width = W + "px";
+    canvas.style.height = H + "px";
+
+    const mask = document.createElement("canvas");
+    mask.width = W * DPR;
+    mask.height = H * DPR;
+    const mctx = mask.getContext("2d");
+
+    const rand = (i, salt) => {
+      const value = Math.sin(i * 127.1 + salt * 311.7) * 43758.5453;
+      return value - Math.floor(value);
+    };
+
+    const setFont = (font, spacing) => {
+      ctx.font = font;
+      if ("letterSpacing" in ctx) ctx.letterSpacing = spacing;
+    };
+
+    const measure = () => {
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      setFont("600 20px Geist, sans-serif", "0px");
+      symW = ctx.measureText("¥").width;
+      setFont("600 46px Geist, sans-serif", "-1.6px");
+      numW = ctx.measureText(amount).width;
+      span = symW + 2 + numW;
+      buildMask();
+    };
+
+    function buildMask() {
+      if (!mctx) return;
+      mctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      mctx.clearRect(0, 0, W, H);
+      mctx.textAlign = "left";
+      mctx.textBaseline = "alphabetic";
+      mctx.fillStyle = "#FFFFFF";
+      mctx.font = "600 20px Geist, sans-serif";
+      if ("letterSpacing" in mctx) mctx.letterSpacing = "0px";
+      mctx.fillText("¥", 0, 24);
+      mctx.font = "600 46px Geist, sans-serif";
+      if ("letterSpacing" in mctx) mctx.letterSpacing = "-1.6px";
+      mctx.fillText(amount, symW + 2, 38);
+    }
+
+    const text = (stroke) => {
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
+      setFont("600 20px Geist, sans-serif", "0px");
+      if (stroke) ctx.strokeText("¥", 0, 24);
+      else ctx.fillText("¥", 0, 24);
+      setFont("600 46px Geist, sans-serif", "-1.6px");
+      if (stroke) ctx.strokeText(amount, symW + 2, 38);
+      else ctx.fillText(amount, symW + 2, 38);
+    };
+
+    const streak = (i, t, minWidth, maxWidth, minAlpha, maxAlpha, salt) => {
+      const speed = 0.32 + rand(i, salt + 1.1) * 0.55;
+      const progress = (rand(i, salt + 2.3) + t * speed) % 1;
+      const x = rand(i, salt + 3.7) * span;
+      const length = 8 + rand(i, salt + 4.9) * 24;
+      const width = minWidth + rand(i, salt + 5.5) * (maxWidth - minWidth);
+      const y = H - progress * (H + length);
+      const sway = Math.sin(t * 1.2 + i * 2.13) * 2.2;
+
+      const gradient = ctx.createLinearGradient(0, y + length, 0, y);
+      gradient.addColorStop(0, "rgba(255, 104, 12, 0)");
+      gradient.addColorStop(0.36, "rgba(255, 154, 36, 0.42)");
+      gradient.addColorStop(0.72, "rgba(255, 222, 142, 0.74)");
+      gradient.addColorStop(1, "rgba(255, 252, 232, 0.92)");
+
+      ctx.globalAlpha = minAlpha + rand(i, salt + 6.1) * (maxAlpha - minAlpha);
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.moveTo(x - width * 0.5, y + length);
+      ctx.quadraticCurveTo(x - width * 0.9 + sway, y + length * 0.5, x + sway, y);
+      ctx.quadraticCurveTo(x + width * 0.9 + sway, y + length * 0.5, x + width * 0.5, y + length);
+      ctx.closePath();
+      ctx.fill();
+    };
+
+    const spark = (i, t) => {
+      const speed = 0.34 + rand(i, 13.1) * 0.58;
+      const progress = (rand(i, 14.3) + t * speed) % 1;
+      const x = rand(i, 15.7) * span + Math.sin(t * 1.7 + i) * 2.2;
+      const y = H - progress * (H + 6);
+      const radius = 0.45 + rand(i, 16.9) * 0.95;
+
+      ctx.globalAlpha = 0.32 + rand(i, 17.3) * 0.48;
+      ctx.fillStyle = "#FFF6D0";
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fill();
+    };
+
+    const frame = (t) => {
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      ctx.clearRect(0, 0, W, H);
+
+      const base = ctx.createLinearGradient(0, 3, 0, H);
+      base.addColorStop(0, "#5A1002");
+      base.addColorStop(0.32, "#A32605");
+      base.addColorStop(0.62, "#D94A08");
+      base.addColorStop(0.84, "#8A1C04");
+      base.addColorStop(1, "#4A0C02");
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = base;
+      ctx.fillRect(0, 0, W, H);
+
+      ctx.globalCompositeOperation = "lighter";
+
+      for (let i = 0; i < 20; i += 1) {
+        streak(i, t, 4.0, 10.0, 0.34, 0.66, 1.7);
+      }
+      for (let i = 20; i < 64; i += 1) {
+        streak(i, t, 1.0, 3.4, 0.34, 0.72, 5.3);
+      }
+      for (let i = 0; i < 26; i += 1) {
+        spark(i, t);
+      }
+
+      ctx.globalCompositeOperation = "destination-in";
+      ctx.globalAlpha = 1;
+      ctx.drawImage(mask, 0, 0, W, H);
+
+      ctx.globalCompositeOperation = "source-atop";
+      const core = ctx.createLinearGradient(0, 3, 0, H);
+      core.addColorStop(0, "#FFFFFF");
+      core.addColorStop(0.42, "#FFE9A8");
+      core.addColorStop(1, "#FF7A18");
+      ctx.globalAlpha = 0.12;
+      ctx.filter = "blur(1.6px)";
+      ctx.fillStyle = core;
+      text(false);
+      ctx.filter = "none";
+
+      const hot = ctx.createRadialGradient(span * 0.44, 27, 1, span * 0.44, 27, span * 0.58);
+      hot.addColorStop(0, "rgba(255, 248, 218, 0.26)");
+      hot.addColorStop(0.45, "rgba(255, 186, 86, 0.16)");
+      hot.addColorStop(1, "rgba(255, 110, 16, 0)");
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = hot;
+      ctx.fillRect(0, 0, W, H);
+
+      ctx.globalCompositeOperation = "source-over";
+      ctx.lineWidth = theme === "dark" ? 0.45 : 0.6;
+      ctx.lineJoin = "round";
+      ctx.strokeStyle = theme === "dark" ? "rgba(26, 10, 4, 0.35)" : "rgba(42, 10, 4, 0.82)";
+      text(true);
+
+      ctx.globalCompositeOperation = theme === "light" ? "source-over" : "lighter";
+      for (let i = 0; i < 12; i += 1) {
+        const x = symW + 2 + (0.055 + i * 0.082) * numW + Math.sin(t * 1.7 + i * 2.4) * 2.8;
+        const height = 11 + rand(i, 21.3) * 7;
+        const width = 2.4 + rand(i, 22.7) * 3.2;
+        const sway = Math.sin(t * 2.1 + i * 1.3) * 3.2;
+        const flame = ctx.createLinearGradient(0, 19, 0, 19 - height);
+        flame.addColorStop(0, "rgba(255, 76, 8, 0)");
+        flame.addColorStop(0.34, "rgba(255, 108, 16, 0.72)");
+        flame.addColorStop(0.78, "rgba(255, 172, 42, 0.92)");
+        flame.addColorStop(1, "rgba(255, 232, 154, 0)");
+        ctx.fillStyle = flame;
+        ctx.globalAlpha = 0.9;
+        ctx.beginPath();
+        ctx.moveTo(x - width * 0.5, 19);
+        ctx.quadraticCurveTo(x - width * 0.9, 12, x + sway, 19 - height);
+        ctx.quadraticCurveTo(x + width * 0.9, 12, x + width * 0.5, 19);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      for (let i = 0; i < 18; i += 1) {
+        const speed = 0.14 + rand(i, 31.1) * 0.22;
+        const progress = (rand(i, 32.3) + t * speed) % 1;
+        const x = rand(i, 33.7) * span + Math.sin(t * 2 + i) * 2.6;
+        const y = 44 - progress * 42;
+        const radius = 0.55 + rand(i, 34.9) * 1.15;
+        ctx.fillStyle = i % 3 === 0 ? "#FFE7A0" : "#FF7A18";
+        ctx.globalAlpha = 0.38 + rand(i, 35.3) * 0.46;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.globalCompositeOperation = "source-over";
+      ctx.globalAlpha = 1;
+    };
+
+    measure();
+    frame(4.6);
+
+    Promise.all([
+      document.fonts.load("600 46px Geist"),
+      document.fonts.load("600 20px Geist")
+    ]).then(() => {
+      measure();
+      frame(freeze ? 4.6 : performance.now() / 1000);
+      if (!freeze) {
+        const tick = (now) => {
+          frame(now / 1000);
+          requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      }
+    });
+  }
+
+  window.__READY__ = document.fonts.ready.then(() => {
+    requestAnimationFrame(() => { window.__READY_AT__ = performance.now(); });
+    return true;
+  });
+</script>
+</body>
+</html>

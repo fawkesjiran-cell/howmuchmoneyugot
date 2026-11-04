@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <!-- macOS Big Sur squircle presentation drop shadow -->
+    <filter id="tile-drop-shadow" x="-20%" y="-20%" width="140%" height="145%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="36" stdDeviation="30" flood-color="#05140e" flood-opacity="0.22" />
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#05140e" flood-opacity="0.14" />
+    </filter>
+
+    <!-- Deep pine green squircle gradient with subtle top light -->
+    <linearGradient id="pineTileGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#146B4A" />
+      <stop offset="42%" stop-color="#104D36" />
+      <stop offset="100%" stop-color="#0F3D2E" />
+    </linearGradient>
+
+    <!-- Machined edge highlight stroke -->
+    <linearGradient id="tileRimStroke" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.24" />
+      <stop offset="30%" stop-color="#FFFFFF" stop-opacity="0.06" />
+      <stop offset="100%" stop-color="#05140E" stop-opacity="0.32" />
+    </linearGradient>
+
+    <!-- Cream pulse and coin gradient with subtle top light -->
+    <linearGradient id="creamGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FAF5EC" />
+      <stop offset="100%" stop-color="#F3EBDD" />
+    </linearGradient>
+
+    <!-- Ember orange accent dot gradient -->
+    <linearGradient id="emberDotGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#D96923" />
+      <stop offset="100%" stop-color="#C25A17" />
+    </linearGradient>
+
+    <!-- Subtle machined tactile shadow under pulse line and coin -->
+    <filter id="mark-depth" x="-10%" y="-10%" width="120%" height="125%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#05140E" flood-opacity="0.32" />
+    </filter>
+  </defs>
+
+  <!-- Presentation Background: Plain warm off-white #F3F6F4 -->
+  <rect width="1024" height="1024" fill="#F3F6F4" />
+
+  <!-- macOS Big Sur Squircle Tile (~74% of 1024 = 758px, centered at 512, 512 -> x=133, y=133, rx=172) -->
+  <g filter="url(#tile-drop-shadow)">
+    <!-- Base Squircle tile in deep pine gradient -->
+    <rect x="133" y="133" width="758" height="758" rx="172" ry="172" fill="url(#pineTileGrad)" />
+    <!-- Machined edge highlight stroke -->
+    <rect x="133" y="133" width="758" height="758" rx="172" ry="172" fill="none" stroke="url(#tileRimStroke)" stroke-width="3" />
+  </g>
+
+  <!--
+    ========================================================================
+    CONCEPT: "Pay Pulse" — Live Earnings
+
+    Coordinate System & Tile Mapping:
+    - Canvas: 1024 x 1024
+    - Tile bounds: X: [133, 891], Y: [133, 891] (Width = 758px, Height = 758px).
+    - 3% rule: 758 * 0.03 = 22.74px. Every stroke width, radius, and element is >= 24px.
+
+    Specifications:
+    - Bold cream pulse line enters from the left edge at 58% of tile height:
+        Y = 133 + 758 * 0.58 = 133 + 439.64 = ~573.
+        Left start: X = 133 (tile left boundary) or smoothly inside tile edge ~160.
+    - Flat run, one shallow dip, one tall clean spike up to 30% of tile height:
+        Spike peak Y = 133 + 758 * 0.30 = 133 + 227.4 = ~360.
+    - Descends in a straight segment that flows into a cream circular coin at 76% width and 47% height:
+        Coin center X = 133 + 758 * 0.76 = 133 + 576.08 = ~709.
+        Coin center Y = 133 + 758 * 0.47 = 133 + 356.26 = ~489.
+    - No second bump, no extra spikes.
+    - Coin diameter: ~20% of tile = 758 * 0.20 = ~151.6px -> Radius R = 76px.
+    - The pulse line connects smoothly to the coin edge (tangent flow).
+    - Pulse stroke thickness: 46px (ensures solid mass and razor-sharp visibility at 16x16 px).
+    - Ember-orange dot sits at the peak of the spike:
+        Spike peak at (446, 360). Dot diameter = 28px (R = 14px), >= 3% threshold.
+    - Coin carries a bold deep pine Yen sign (¥), cleanly proportioned with ample cream padding.
+    ========================================================================
+  -->
+
+  <g id="pay-pulse-artwork" filter="url(#mark-depth)">
+    <!-- 1. BOLD CREAM PULSE LINE -->
+    <!-- Enters from left at Y = 573, shallow dip to Y = 624, tall spike to (446, 360), descends straight into coin rim -->
+    <path d="M 133 573
+             L 326 573
+             L 368 624
+             L 446 360
+             L 646 524"
+          fill="none"
+          stroke="url(#creamGrad)"
+          stroke-width="48"
+          stroke-linecap="round"
+          stroke-linejoin="round" />
+
+    <!-- 2. CREAM CIRCULAR COIN (~20% of tile diameter = 152px, R = 76px, center: 709, 489) -->
+    <circle cx="709" cy="489" r="76" fill="url(#creamGrad)" />
+    <!-- Subtle machined inner rim lip for tactile coin feel -->
+    <circle cx="709" cy="489" r="71" fill="none" stroke="#FFFFFF" stroke-opacity="0.4" stroke-width="2" />
+
+    <!-- 3. BOLD DEEP PINE YEN SIGN (¥) ON COIN -->
+    <g id="pine-yen-glyph" fill="#0F3D2E">
+      <!-- Center vertical stem: width 14px, height 46px -->
+      <rect x="702" y="478" width="14" height="46" rx="2.5" />
+
+      <!-- Upper crossbar: width 66px, height 10px -->
+      <rect x="676" y="482" width="66" height="10" rx="2.5" />
+
+      <!-- Lower crossbar: width 54px, height 10px -->
+      <rect x="682" y="499" width="54" height="10" rx="2.5" />
+
+      <!-- Left diagonal arm (V): thickness ~14px -->
+      <polygon points="680,450 694,450 714,482 700,482" />
+
+      <!-- Right diagonal arm (V): thickness ~14px -->
+      <polygon points="738,450 724,450 704,482 718,482" />
+    </g>
+
+    <!-- 4. EMBER-ORANGE ACCENT DOT AT SPIKE PEAK -->
+    <!-- Center (446, 360), R = 14px (Diameter = 28px) -->
+    <circle cx="446" cy="360" r="14" fill="url(#emberDotGrad)" />
+    <!-- Subtle machined specular reflection -->
+    <circle cx="444" cy="357.5" r="4.5" fill="#FFE2D1" fill-opacity="0.6" />
+  </g>
+</svg>

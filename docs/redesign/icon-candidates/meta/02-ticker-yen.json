@@ -1,0 +1,14 @@
+{
+  "slug": "b4",
+  "title": "B · Ticker Yen v4",
+  "screen": "projects/15073270735791219942/screens/afd37a697b0b483d86e3afe2e6bfbefb",
+  "screen_title": "Ticker Yen App Icon",
+  "screen_type": "IMAGE",
+  "width": "1024",
+  "height": "1024",
+  "prompt": "One single macOS app icon artwork. Square 1:1 composition.\nA macOS Big Sur style rounded-square tile (squircle), centered, about 74% of the canvas width, with a soft contact shadow beneath it, on a plain warm off-white #F3F6F4 presentation background. The tile is deep pine green.\nStyle: premium flat vector with subtle machined depth, soft top light, very gentle inner edge highlight. No glassmorphism, no gloss, no sparkles, no emoji, no text labels, no UI window, no phone mockup, no additional icons, no watermark.\nPalette strictly: pine #0F3D2E and #146B4A, cream #F3EBDD, ember #C25A17.\nThe mark must stay readable at 16x16 px: simple silhouette, high contrast, no detail thinner than 3% of the tile width. The only glyph allowed is the yen sign itself.\n\nCONCEPT \"Ticker Yen\": a clean yen with one live segment.\n- No coin, no circle. One cream yen sign, compact, about 48% of the tile width, centered.\n- Solid bold geometric strokes: two 45 degree arms meet at the top of a thick continuous vertical stem. Two horizontal crossbars of equal width are centered on the stem and evenly spaced. The stem runs from the V junction to the bottom.\n- Exactly two hairline seams, like a split-flap counter: one diagonal seam separating the lower half of the left arm, and one horizontal seam near the bottom of the stem. The lower-left arm segment is ember orange. Everything else is cream and continuous.\n- The glyph must read as a clean yen sign first, a counter second. No broken silhouette, no offset crossbars, no extra seams, no decoration.\n",
+  "generated_at": "2026-11-04T02:52:24+0800",
+  "screenshot_file": "projects/15073270735791219942/files/fb70ca15bdf14992bd04185ea365d77e",
+  "svg_file": "projects/15073270735791219942/files/daf2a4677e8045b3920a248681c304d6",
+  "model": "GEMINI_3_8_FLASH"
+}

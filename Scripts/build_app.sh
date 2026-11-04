@@ -44,6 +44,8 @@ cp "$BIN" "$APP/Contents/MacOS/$EXECUTABLE"
 chmod +x "$APP/Contents/MacOS/$EXECUTABLE"
 cp "$ROOT/Resources/Info.plist" "$APP/Contents/Info.plist"
 cp "$ROOT/Resources/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
+cp "$ROOT/Resources/FireTexture.png" "$APP/Contents/Resources/FireTexture.png"
+cp -R "$ROOT/Resources/Fonts" "$APP/Contents/Resources/Fonts"
 cp "$ROOT/THIRD_PARTY_NOTICES.md" "$APP/Contents/Resources/THIRD_PARTY_NOTICES.md"
 printf 'APPL????' > "$APP/Contents/PkgInfo"
 

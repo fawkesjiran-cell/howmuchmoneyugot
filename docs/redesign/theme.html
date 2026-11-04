@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Pine Ledger — theme</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1240px; height: 760px; }
+  body {
+    background: #DCE4DE;
+    font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: #0E1F18;
+    -webkit-font-smoothing: antialiased;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .masthead { display: flex; align-items: baseline; gap: 14px; padding: 0 4px; }
+  .masthead h1 { font-size: 22px; font-weight: 600; letter-spacing: -.025em; }
+  .masthead .sub { font-size: 11px; font-weight: 500; color: #4A5E53; letter-spacing: .005em; }
+  .masthead .right { margin-left: auto; font-size: 10px; font-weight: 500; color: #5C7065; letter-spacing: .02em; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; flex: 1; min-height: 0; }
+
+  .theme {
+    border-radius: 16px;
+    justify-content: space-between;
+    padding: 26px 26px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    outline: 1px solid rgba(14,31,24,.08);
+    outline-offset: -1px;
+  }
+
+  .theme.light { background: #F3F6F4; color: #0E1F18; }
+  .theme.dark { background: #091310; color: #EAF2ED; outline-color: #263A30; }
+
+  .thead { display: flex; align-items: flex-start; gap: 10px; }
+  .thead .name { font-size: 26px; font-weight: 600; letter-spacing: -.035em; line-height: 1; }
+  .theme.dark .thead .name { color: #EAF2ED; }
+  .thead .meta { margin-left: auto; text-align: right; display: flex; flex-direction: column; gap: 3px; }
+  .thead .meta b { font-size: 9.5px; font-weight: 600; letter-spacing: .01em; }
+  .theme.light .thead .meta b { color: #146B4A; }
+  .theme.dark .thead .meta b { color: #5BD6A0; }
+  .thead .meta span { font-size: 9px; font-weight: 500; color: #5C7065; }
+  .theme.dark .thead .meta span { color: #9FB3A7; }
+
+  .lede { font-size: 11.5px; line-height: 16px; color: #55685E; max-width: 44ch; margin-top: -6px; }
+  .theme.dark .lede { color: #9FB3A7; }
+
+  .swatches { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .sw { display: flex; flex-direction: column; gap: 5px; }
+  .chip { height: 52px; border-radius: 8px; border: 1px solid rgba(14,31,24,.10); }
+  .theme.dark .chip { border-color: rgba(234,242,237,.12); }
+  .sw .role { font-size: 9px; font-weight: 600; letter-spacing: .01em; color: #3E5147; }
+  .sw .hex { font-size: 8.5px; font-weight: 500; letter-spacing: .02em; color: #5F746A; font-variant-numeric: tabular-nums; }
+  .theme.dark .sw .role { color: #C3D3C9; }
+  .theme.dark .sw .hex { color: #7C9185; }
+
+  .typeblock {
+    border-radius: 12px;
+    padding: 16px 18px 14px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .theme.light .typeblock { background: #FFFFFF; border: 1px solid #DCE5DF; }
+  .theme.dark .typeblock { background: #111E18; border: 1px solid #263A30; }
+
+  .typeblock .lbl { font-size: 9px; font-weight: 500; letter-spacing: .01em; color: #55685E; margin-bottom: 5px; }
+  .theme.dark .typeblock .lbl { color: #9FB3A7; }
+  .typeblock .big { font-size: 46px; font-weight: 600; letter-spacing: -.035em; line-height: 46px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .typeblock .big i { font-style: normal; font-size: 20px; font-weight: 600; letter-spacing: 0; vertical-align: 18px; margin-right: 2px; }
+  .theme.light .typeblock .big i { color: #146B4A; }
+  .theme.dark .typeblock .big i { color: #5BD6A0; }
+  .typeblock .side { text-align: right; display: flex; flex-direction: column; gap: 4px; padding-bottom: 3px; }
+  .typeblock .side .k { font-size: 9px; font-weight: 500; color: #5F746A; }
+  .typeblock .side .v { font-size: 15px; font-weight: 600; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+  .theme.light .typeblock .side .v { color: #0E1F18; }
+  .theme.dark .typeblock .side .v { color: #EAF2ED; }
+
+  .components { display: flex; align-items: center; gap: 8px; }
+  .btn {
+    height: 32px; padding: 0 13px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px;
+    font-size: 10.5px; font-weight: 600; letter-spacing: -.005em; white-space: nowrap;
+  }
+  .theme.light .btn.primary { background: #146B4A; color: #FFFFFF; }
+  .theme.dark .btn.primary { background: #5BD6A0; color: #06231A; }
+  .theme.light .btn.ember { background: #FBEBDC; color: #A5480A; border: 1px solid rgba(165,72,10,.18); }
+  .theme.dark .btn.ember { background: #2A1B0F; color: #F0A868; border: 1px solid rgba(240,168,104,.2); }
+  .theme.light .btn.danger { color: #B3261E; border: 1px solid rgba(179,38,30,.24); }
+  .theme.dark .btn.danger { color: #FF8177; border: 1px solid rgba(255,129,119,.26); }
+  .theme.light .btn.ghost { color: #55685E; border: 1px solid #DCE5DF; }
+  .theme.dark .btn.ghost { color: #9FB3A7; border: 1px solid #263A30; }
+  .btn .dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+  .rule { height: 1px; background: #DCE5DF; }
+  .theme.dark .rule { background: #263A30; }
+
+  .footer { display: flex; align-items: center; gap: 18px; padding: 0 4px; font-size: 9.5px; font-weight: 500; color: #4A5E53; }
+  .footer b { font-weight: 600; color: #0E1F18; }
+  .footer .swatchline { display: inline-flex; align-items: center; gap: 5px; }
+  .footer .swatchline i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+  .footer .sp { margin-left: auto; }
+
+  body.zoom { zoom: 2; }
+</style>
+</head>
+<body>
+  <header class="masthead">
+    <h1>Pine Ledger</h1>
+    <div class="sub">A theme for <b>How much money u got?</b> · macOS menu bar, 392 × 320</div>
+    <div class="right">LIGHT + DARK · GEIST · 8 / 12 / 16 RADII</div>
+  </header>
+
+  <main class="grid">
+    <section class="theme light">
+      <div class="thead">
+        <div class="name">Light</div>
+        <div class="meta"><b>Daylight instrument</b><span>body text ≥ 5.4:1 · cards #FFFFFF</span></div>
+      </div>
+      <p class="lede">A cool pine-tinted neutral keeps the panel calm. The balance carries the hierarchy; green means money earned, ember means overtime, red only means destructive.</p>
+
+      <div class="swatches">
+        <div class="sw"><div class="chip" style="background:#F3F6F4"></div><span class="role">canvas</span><span class="hex">#F3F6F4</span></div>
+        <div class="sw"><div class="chip" style="background:#FFFFFF"></div><span class="role">surface</span><span class="hex">#FFFFFF</span></div>
+        <div class="sw"><div class="chip" style="background:#0E1F18"></div><span class="role">ink</span><span class="hex">#0E1F18</span></div>
+        <div class="sw"><div class="chip" style="background:#55685E"></div><span class="role">muted</span><span class="hex">#55685E</span></div>
+        <div class="sw"><div class="chip" style="background:#146B4A"></div><span class="role">primary</span><span class="hex">#146B4A</span></div>
+        <div class="sw"><div class="chip" style="background:#A5480A"></div><span class="role">ember</span><span class="hex">#A5480A</span></div>
+        <div class="sw"><div class="chip" style="background:#B3261E"></div><span class="role">danger</span><span class="hex">#B3261E</span></div>
+        <div class="sw"><div class="chip" style="background:#DCE5DF"></div><span class="role">line</span><span class="hex">#DCE5DF</span></div>
+      </div>
+
+      <div class="typeblock">
+        <div>
+          <div class="lbl">This session · earning regular pay</div>
+          <div class="big"><i>¥</i>231.54</div>
+        </div>
+        <div class="side"><span class="k">per hour</span><span class="v">¥42.50</span><span class="k">daily target</span><span class="v">¥340.00</span></div>
+      </div>
+
+      <div class="components">
+        <span class="btn primary"><span class="dot"></span>Clock out</span>
+        <span class="btn ember">▲ Start overtime</span>
+        <span class="btn ghost">Finish</span>
+        <span class="btn danger">Clear</span>
+      </div>
+
+      <div class="rule"></div>
+      <p class="lede" style="margin-top:-6px">Type: Geist 600 for money and headings, 500 for labels, 400 for copy. Tabular figures everywhere a number can change. One family, three weights.</p>
+    </section>
+
+    <section class="theme dark">
+      <div class="thead">
+        <div class="name">Dark</div>
+        <div class="meta"><b>Instrument at night</b><span>body text ≥ 8.5:1 · cards #111E18</span></div>
+      </div>
+      <p class="lede">Deep pine-black, lifted by value rather than blur. Mint carries the earning state; ember stays the only warm signal. No glow, no glass, no pure black.</p>
+
+      <div class="swatches">
+        <div class="sw"><div class="chip" style="background:#091310"></div><span class="role">canvas</span><span class="hex">#091310</span></div>
+        <div class="sw"><div class="chip" style="background:#111E18"></div><span class="role">surface</span><span class="hex">#111E18</span></div>
+        <div class="sw"><div class="chip" style="background:#EAF2ED"></div><span class="role">ink</span><span class="hex">#EAF2ED</span></div>
+        <div class="sw"><div class="chip" style="background:#9FB3A7"></div><span class="role">muted</span><span class="hex">#9FB3A7</span></div>
+        <div class="sw"><div class="chip" style="background:#5BD6A0"></div><span class="role">primary</span><span class="hex">#5BD6A0</span></div>
+        <div class="sw"><div class="chip" style="background:#F0A868"></div><span class="role">ember</span><span class="hex">#F0A868</span></div>
+        <div class="sw"><div class="chip" style="background:#FF8177"></div><span class="role">danger</span><span class="hex">#FF8177</span></div>
+        <div class="sw"><div class="chip" style="background:#263A30"></div><span class="role">line</span><span class="hex">#263A30</span></div>
+      </div>
+
+      <div class="typeblock">
+        <div>
+          <div class="lbl">This session · earning regular pay</div>
+          <div class="big"><i>¥</i>231.54</div>
+        </div>
+        <div class="side"><span class="k">per hour</span><span class="v">¥42.50</span><span class="k">daily target</span><span class="v">¥340.00</span></div>
+      </div>
+
+      <div class="components">
+        <span class="btn primary"><span class="dot"></span>Clock out</span>
+        <span class="btn ember">▲ Start overtime</span>
+        <span class="btn ghost">Finish</span>
+        <span class="btn danger">Clear</span>
+      </div>
+
+      <div class="rule"></div>
+      <p class="lede" style="margin-top:-6px">Same roles, inverted luminance. The amount stays ink; the currency mark and live dot carry the earning color so the number never turns into decoration.</p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span class="swatchline"><i style="background:#146B4A"></i>pine = money earned</span>
+    <span class="swatchline"><i style="background:#A5480A"></i>ember = overtime</span>
+    <span class="swatchline"><i style="background:#B3261E"></i>red = destructive only</span>
+    <span class="sp">Stitch design systems: <b>Pine Ledger · Light</b> / <b>Pine Ledger · Dark</b></span>
+  </footer>
+<script>
+  if (new URLSearchParams(location.search).get("zoom") === "2") {
+    document.body.classList.add("zoom");
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <!-- macOS Big Sur squircle contact drop shadow beneath tile -->
+    <filter id="tile-drop-shadow" x="-20%" y="-20%" width="140%" height="145%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="36" stdDeviation="30" flood-color="#05140e" flood-opacity="0.22" />
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#05140e" flood-opacity="0.14" />
+    </filter>
+
+    <!-- Deep pine green squircle gradient with subtle top light -->
+    <linearGradient id="pineTileGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#146B4A" />
+      <stop offset="42%" stop-color="#104D36" />
+      <stop offset="100%" stop-color="#0F3D2E" />
+    </linearGradient>
+
+    <!-- Machined edge highlight stroke -->
+    <linearGradient id="tileRimStroke" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.24" />
+      <stop offset="30%" stop-color="#FFFFFF" stop-opacity="0.06" />
+      <stop offset="100%" stop-color="#05140E" flood-color="#05140E" stop-opacity="0.32" />
+    </linearGradient>
+
+    <!-- Cream hourglass fill gradient with subtle machined top light -->
+    <linearGradient id="creamGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FAF5EC" />
+      <stop offset="100%" stop-color="#F3EBDD" />
+    </linearGradient>
+
+    <!-- Ember orange grain gradient -->
+    <linearGradient id="emberGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#D96923" />
+      <stop offset="100%" stop-color="#C25A17" />
+    </linearGradient>
+
+    <!-- Very subtle tactile contact depth beneath the cream hourglass -->
+    <filter id="hourglass-shadow" x="-15%" y="-15%" width="130%" height="130%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#05140E" flood-opacity="0.28" />
+    </filter>
+  </defs>
+
+  <!-- Presentation Background: Plain warm off-white #F3F6F4 -->
+  <rect width="1024" height="1024" fill="#F3F6F4" />
+
+  <!-- macOS Big Sur Squircle Tile (~74% of 1024 = 758px, centered at 512, 512 -> x=133, y=133, rx=172) -->
+  <g filter="url(#tile-drop-shadow)">
+    <!-- Base Squircle tile in deep pine gradient -->
+    <rect x="133" y="133" width="758" height="758" rx="172" ry="172" fill="url(#pineTileGrad)" />
+    <!-- Machined edge highlight stroke -->
+    <rect x="133" y="133" width="758" height="758" rx="172" ry="172" fill="none" stroke="url(#tileRimStroke)" stroke-width="3" />
+  </g>
+
+  <!--
+    ========================================================================
+    CONCEPT: "Hourglass" — Time is Money
+
+    Grid & Dimensions:
+    - Tile: 758px x 758px, bounds: X: [133, 891], Y: [133, 891], Center: (512, 512).
+    - 3% rule: 758 * 0.03 = 22.74px. Every stroke width, waist, and diameter is >= 23px!
+    - Hourglass width: ~40% of tile width = 758 * 0.40 = ~303px -> 304px (X: 360 to 664, centered at X=512).
+    - Hourglass height: ~56% of tile height = 758 * 0.56 = ~424px.
+    - Centered slightly above middle: Center Y = 490 (offset -22px above 512).
+      Top Y = 490 - (424/2) = 278. Bottom Y = 490 + (424/2) = 702.
+
+    Geometry:
+    - Flat top cap: width 304px, height 26px (X: 360 to 664, Y: 278 to 304, rx=6).
+    - Flat bottom cap: width 304px, height 26px (X: 360 to 664, Y: 676 to 702, rx=6).
+    - Upper triangular bulb: from Y=304 (width 290px, X: 367 to 657) tapering to waist at Y=466 (waist width 38px, X: 493 to 531).
+    - Narrow waist: Y=466 to Y=474, width 38px (well above 22.74px 3% limit).
+    - Lower triangular bulb: expands from waist at Y=474 (X: 493 to 531) down to Y=676 (width 290px, X: 367 to 657).
+
+    Three Ember-Orange Grains:
+    - Vertical line at X = 512 falling through the waist.
+    - Diameter = 23px (R = 11.5px), meeting the 3% rule.
+    - Grain 1: Waist center (512, 470).
+    - Grain 2: Below waist (512, 502).
+    - Grain 3: Below grain 2 (512, 534).
+    - Clean clearance above Yen glyph (gap > 26px).
+
+    Lower Bulb Bold Pine Yen Sign:
+    - Target width: ~16% of tile width = 758 * 0.16 = ~121px -> 120px (X: 452 to 572).
+    - Height: 98px (Y: 562 to 660).
+    - Centered in lower bulb at X=512, Y=611.
+    - Generous cream margins:
+      At Y=562..660, lower bulb width is 176px to 266px.
+      Left/Right cream padding is >= 28px to 73px!
+      Top clearance from Grain 3: 28px.
+      Bottom clearance from bottom cap: 16px of solid cream.
+      Fully inside the cream bulb, zero overlap or edge intersection.
+    - Stroke thickness: 23px (Stem: 24px, Crossbars: 18px, V arms: 23px perpendicular).
+    ========================================================================
+  -->
+
+  <!-- Solid Cream Hourglass Silhouette -->
+  <g id="cream-hourglass" filter="url(#hourglass-shadow)">
+    <!-- Top flat cap -->
+    <rect x="360" y="278" width="304" height="26" rx="6" fill="url(#creamGrad)" />
+
+    <!-- Upper triangular bulb -->
+    <polygon points="367,304 657,304 531,466 493,466" fill="url(#creamGrad)" />
+
+    <!-- Narrow waist -->
+    <rect x="493" y="466" width="38" height="8" rx="0" fill="url(#creamGrad)" />
+
+    <!-- Lower triangular bulb -->
+    <polygon points="493,474 531,474 657,676 367,676" fill="url(#creamGrad)" />
+
+    <!-- Bottom flat cap -->
+    <rect x="360" y="676" width="304" height="26" rx="6" fill="url(#creamGrad)" />
+  </g>
+
+  <!-- Complete Bold Pine Yen Sign in Lower Bulb (#0F3D2E) -->
+  <g id="pine-yen-mark" fill="#0F3D2E">
+    <!-- Vertical stem: width 24px (X: 500 to 524), Y: 604 to 660 -->
+    <rect x="500" y="604" width="24" height="56" rx="3" />
+
+    <!-- Upper horizontal crossbar: width 120px (X: 452 to 572), height 18px (Y: 604 to 622) -->
+    <rect x="452" y="604" width="120" height="18" rx="4" />
+
+    <!-- Lower horizontal crossbar: width 98px (X: 463 to 561), height 18px (Y: 630 to 648) -->
+    <rect x="463" y="630" width="98" height="18" rx="4" />
+
+    <!-- Diagonal upper V arms meeting cleanly at stem top (512, 608) -->
+    <!-- Left diagonal arm -->
+    <polygon points="460,562 485,562 524,608 499,608" />
+    <!-- Right diagonal arm -->
+    <polygon points="564,562 539,562 500,608 525,608" />
+  </g>
+
+  <!-- Three Falling Ember-Orange Grains (#C25A17) in a Vertical Line through Waist -->
+  <g id="ember-grains">
+    <!-- Grain 1: At waist center (512, 470) -->
+    <circle cx="512" cy="470" r="11.5" fill="url(#emberGrad)" />
+
+    <!-- Grain 2: Below waist (512, 502) -->
+    <circle cx="512" cy="502" r="11.5" fill="url(#emberGrad)" />
+
+    <!-- Grain 3: Below grain 2, well above Yen sign (512, 534) -->
+    <circle cx="512" cy="534" r="11.5" fill="url(#emberGrad)" />
+  </g>
+
+</svg>

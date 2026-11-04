@@ -102,6 +102,10 @@ final class AppModel: ObservableObject {
         ledger.total(current: snapshot.total)
     }
 
+    var hasAnyEarnings: Bool {
+        totalEarned > 0
+    }
+
     var canClockIn: Bool {
         session.phase == .idle || session.phase == .clockedOut || session.phase == .finished
     }
@@ -180,6 +184,15 @@ final class AppModel: ObservableObject {
     }
 
     func resetSession() {
+        session = .idle
+        now = Date()
+    }
+
+    /// Clears every accumulated amount: the persistent all-time ledger and the
+    /// session in progress (which also stops any running timer). Preferences and
+    /// pay settings are kept.
+    func resetEverything() {
+        ledger = .empty
         session = .idle
         now = Date()
     }

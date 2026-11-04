@@ -22,6 +22,7 @@ struct PopoverView: View {
                             route = .settings
                         }
                     }
+                    .allowsHitTesting(route == .dashboard)
                     .transition(
                         .asymmetric(
                             insertion: .move(edge: .leading).combined(with: .opacity),
@@ -35,6 +36,7 @@ struct PopoverView: View {
                             route = .dashboard
                         }
                     }
+                    .allowsHitTesting(route == .settings)
                     .transition(
                         .asymmetric(
                             insertion: .move(edge: .trailing).combined(with: .opacity),
@@ -44,7 +46,7 @@ struct PopoverView: View {
                 }
             }
         }
-        .frame(width: 392, height: 456)
+        .frame(width: 392, height: 320)
         .environment(\.locale, Locale(identifier: model.language.localeIdentifier))
     }
 }

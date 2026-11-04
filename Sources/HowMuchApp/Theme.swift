@@ -1,6 +1,8 @@
 import AppKit
 import SwiftUI
 
+/// Pine Ledger tokens. Flat surfaces, 1px hairlines, pine for earned money,
+/// ember for overtime, red only for destructive actions.
 enum Palette {
     private static func dynamic(light: UInt32, dark: UInt32, lightAlpha: CGFloat = 1, darkAlpha: CGFloat = 1) -> Color {
         Color(nsColor: NSColor(name: nil) { appearance in
@@ -12,36 +14,48 @@ enum Palette {
         })
     }
 
-    static let canvas = dynamic(light: 0xF6F2E9, dark: 0x141916)
-    static let canvasDeep = dynamic(light: 0xEFE9DD, dark: 0x101411)
-    static let surface = dynamic(light: 0xFFFFFF, dark: 0xFFFFFF, lightAlpha: 0.76, darkAlpha: 0.055)
-    static let surfaceStrong = dynamic(light: 0xFFFFFF, dark: 0x242C27, lightAlpha: 0.94, darkAlpha: 0.96)
-    static let surfaceMuted = dynamic(light: 0xEDE7DA, dark: 0x202722, lightAlpha: 0.8, darkAlpha: 0.8)
-    static let line = dynamic(light: 0xE0D9CB, dark: 0x323C35, lightAlpha: 0.9, darkAlpha: 0.8)
+    static let canvas = dynamic(light: 0xF3F6F4, dark: 0x091310)
+    static let canvasDeep = canvas
+    static let sunken = dynamic(light: 0xE8EFEA, dark: 0x060E0B)
+    static let surface = dynamic(light: 0xFFFFFF, dark: 0x111E18)
+    static let surfaceStrong = surface
+    static let surfaceMuted = dynamic(light: 0xEEF3EF, dark: 0x0D1813)
+    static let line = dynamic(light: 0xDCE5DF, dark: 0x263A30)
+    static let lineStrong = dynamic(light: 0xC6D3CA, dark: 0x345044)
 
-    static let ink = dynamic(light: 0x17211B, dark: 0xF3EEE4)
-    static let secondary = dynamic(light: 0x6E7871, dark: 0xA4AEA7)
-    static let tertiary = dynamic(light: 0x969E98, dark: 0x7D8880)
+    static let ink = dynamic(light: 0x0E1F18, dark: 0xEAF2ED)
+    static let secondary = dynamic(light: 0x55685E, dark: 0x9FB3A7)
+    static let tertiary = dynamic(light: 0x5F746A, dark: 0x7C9185)
+    static let muted = secondary
+    static let faint = tertiary
 
-    static let normal = dynamic(light: 0x157A53, dark: 0x4AC48C)
-    static let normalDeep = dynamic(light: 0x0B4A34, dark: 0x0E5C40)
-    static let normalSoft = dynamic(light: 0xE2F0E8, dark: 0x163C2D, lightAlpha: 0.9, darkAlpha: 0.8)
-    static let gold = dynamic(light: 0xCB821E, dark: 0xF0B15A)
-    static let goldDeep = dynamic(light: 0xA9660D, dark: 0xD8953F)
-    static let goldSoft = dynamic(light: 0xF8ECD7, dark: 0x3B2C16, lightAlpha: 0.95, darkAlpha: 0.8)
-    static let danger = dynamic(light: 0xB0473D, dark: 0xE38A80)
+    static let primary = dynamic(light: 0x146B4A, dark: 0x5BD6A0)
+    static let primaryHover = dynamic(light: 0x0D5238, dark: 0x86E9BC)
+    static let primarySoft = dynamic(light: 0xDCEFE4, dark: 0x123528)
+    static let onPrimary = dynamic(light: 0xFFFFFF, dark: 0x06231A)
 
-    static let heroTop = dynamic(light: 0x0A3F2D, dark: 0x062E21)
-    static let heroBottom = dynamic(light: 0x116849, dark: 0x0A5038)
-    static let heroLine = Color(hex: 0xF5EEDF).opacity(0.10)
-    static let heroText = Color(hex: 0xFBF6EA)
-    static let heroMuted = Color(hex: 0xFBF6EA).opacity(0.60)
-    static let heroSubtle = Color(hex: 0xFBF6EA).opacity(0.16)
+    static let ember = dynamic(light: 0xA5480A, dark: 0xF0A868)
+    static let emberSoft = dynamic(light: 0xFBEBDC, dark: 0x2A1B0F)
+    static let onEmber = dynamic(light: 0xFFFFFF, dark: 0x1A0F06)
 
-    static let buttonInk = dynamic(light: 0x1B261F, dark: 0xEAE4D8)
-    static let buttonInkText = dynamic(light: 0xF8F3E7, dark: 0x1A211D)
+    static let danger = dynamic(light: 0xB3261E, dark: 0xFF8177)
+    static let dangerSoft = dynamic(light: 0xFBEAE8, dark: 0x2B1513)
 
-    static let shadow = Color.black.opacity(0.16)
+    static let shadow = Color.clear
+
+    // Compatibility aliases retained for the rest of the app.
+    static let normal = primary
+    static let green = primary
+    static let accent = primary
+    static let accentDeep = primary
+    static let gold = ember
+    static let goldDeep = ember
+    static let buttonInk = ink
+    static let buttonInkText = onPrimary
+    static let heroTop = canvas
+    static let heroBottom = canvas
+    static let heroText = ink
+    static let heroMuted = secondary
 }
 
 extension Color {
@@ -69,38 +83,19 @@ extension NSColor {
 
 struct AppBackground: View {
     var body: some View {
-        ZStack {
-            Palette.canvas
-            RadialGradient(
-                colors: [Palette.normal.opacity(0.10), .clear],
-                center: .topLeading,
-                startRadius: 0,
-                endRadius: 360
-            )
-            RadialGradient(
-                colors: [Palette.gold.opacity(0.08), .clear],
-                center: .bottomTrailing,
-                startRadius: 0,
-                endRadius: 330
-            )
-            LinearGradient(
-                colors: [.clear, Palette.canvasDeep.opacity(0.45)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-        }
-        .ignoresSafeArea()
+        Palette.canvas.ignoresSafeArea()
     }
 }
 
 struct CardSurface: ViewModifier {
-    var cornerRadius: CGFloat = 18
+    var cornerRadius: CGFloat = 12
+    var fill: Color = Palette.surface
 
     func body(content: Content) -> some View {
         content
             .background(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(Palette.surface)
+                    .fill(fill)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
@@ -110,8 +105,8 @@ struct CardSurface: ViewModifier {
 }
 
 extension View {
-    func cardSurface(cornerRadius: CGFloat = 18) -> some View {
-        modifier(CardSurface(cornerRadius: cornerRadius))
+    func cardSurface(cornerRadius: CGFloat = 12, fill: Color = Palette.surface) -> some View {
+        modifier(CardSurface(cornerRadius: cornerRadius, fill: fill))
     }
 }
 
@@ -120,8 +115,8 @@ struct SmallCapsLabel: View {
 
     var body: some View {
         Text(text)
-            .font(.system(size: 10, weight: .semibold, design: .rounded))
-            .tracking(1.1)
+            .font(.system(size: 10, weight: .semibold))
+            .tracking(0.8)
             .foregroundStyle(Palette.secondary)
     }
 }

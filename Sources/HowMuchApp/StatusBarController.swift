@@ -2,20 +2,39 @@ import AppKit
 import HowMuchCore
 import SwiftUI
 
+/// Clicking the first time in a fresh popover window should register, even when
+/// the app was just activated; AppKit otherwise swallows that click.
+final class FirstMouseHostingView<Content: View>: NSHostingView<Content> {
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+}
+
+final class FirstMouseHostingController<Content: View>: NSViewController {
+    init(rootView: Content) {
+        super.init(nibName: nil, bundle: nil)
+        view = FirstMouseHostingView(rootView: rootView)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}
+
 @MainActor
 final class StatusBarController: NSObject, NSPopoverDelegate {
     private let model: AppModel
     private let statusItem: NSStatusItem
     private let popover = NSPopover()
-    private let hostingController: NSHostingController<AnyView>
+    private let hostingController: NSViewController
     private var refreshTimer: Timer?
+    private var isMenuTracking = false
     private var lastTitle: String = ""
     private var lastCurrency: CurrencyUnit?
 
     init(model: AppModel) {
         self.model = model
         self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        self.hostingController = NSHostingController(
+        self.hostingController = FirstMouseHostingController(
             rootView: AnyView(PopoverView().environmentObject(model))
         )
         super.init()
@@ -73,7 +92,7 @@ final class StatusBarController: NSObject, NSPopoverDelegate {
     }
 
     private func configurePopover() {
-        popover.contentSize = NSSize(width: 392, height: 456)
+        popover.contentSize = NSSize(width: 392, height: 320)
         popover.contentViewController = hostingController
         popover.behavior = .transient
         popover.animates = true
@@ -91,7 +110,9 @@ final class StatusBarController: NSObject, NSPopoverDelegate {
     }
 
     private func refresh() {
-        guard let button = statusItem.button else { return }
+        // While the context menu is tracking, a status item title change would
+        // move the anchor and make AppKit dismiss/reshape the open menu.
+        guard !isMenuTracking, let button = statusItem.button else { return }
         let snapshot = model.snapshot
         let allTimeTotal = model.money(model.totalEarned)
         let title = allTimeTotal
@@ -126,15 +147,20 @@ final class StatusBarController: NSObject, NSPopoverDelegate {
     // MARK: - Interaction
 
     @objc private func statusItemClicked(_ sender: NSStatusBarButton) {
-        if NSApp.currentEvent?.type == .rightMouseUp {
+        switch NSApp.currentEvent?.type {
+        case .rightMouseUp, .rightMouseDown:
             showContextMenu(from: sender)
-        } else {
+        case .leftMouseUp:
             togglePopover()
+        default:
+            break
         }
     }
 
     private func showContextMenu(from button: NSStatusBarButton) {
+        guard let event = NSApp.currentEvent else { return }
         let menu = NSMenu()
+        menu.autoenablesItems = false
 
         let openItem = NSMenuItem(
             title: model.t(.openApp, AppMetadata.displayName),
@@ -165,11 +191,12 @@ final class StatusBarController: NSObject, NSPopoverDelegate {
         quitItem.target = self
         menu.addItem(quitItem)
 
-        menu.popUp(
-            positioning: nil,
-            at: NSPoint(x: 0, y: button.bounds.height + 3),
-            in: button
-        )
+        isMenuTracking = true
+        defer {
+            isMenuTracking = false
+            refresh()
+        }
+        NSMenu.popUpContextMenu(menu, with: event, for: button)
     }
 
     @objc private func openPanel() {

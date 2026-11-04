@@ -1,0 +1,14 @@
+{
+  "slug": "a2",
+  "title": "A · Pine Gauge v2",
+  "screen": "projects/15073270735791219942/screens/51c625dd503544bf93ef421c75d4cd10",
+  "screen_title": "Pine Gauge App Icon",
+  "screen_type": "IMAGE",
+  "width": "1024",
+  "height": "1024",
+  "prompt": "One single macOS app icon artwork. Square 1:1 composition.\nA macOS Big Sur style rounded-square tile (squircle), centered, about 74% of the canvas width, with a soft contact shadow beneath it, on a plain warm off-white #F3F6F4 presentation background. The tile is deep pine green.\nStyle: premium flat vector with subtle machined depth, soft top light, very gentle inner edge highlight. No glassmorphism, no gloss, no sparkles, no emoji, no text labels, no UI window, no phone mockup, no additional icons, no watermark.\nPalette strictly: pine #0F3D2E and #146B4A, cream #F3EBDD, ember #C25A17.\nThe mark must stay readable at 16x16 px: simple silhouette, high contrast, no detail thinner than 3% of the tile width. The only glyph allowed is the yen sign itself.\n\nCONCEPT \"Pine Gauge\": a precision earnings gauge.\n- Centered on the tile: one cream circular dial, diameter about 56% of the tile, with a thin dark pine rim.\n- Embossed in the middle of the dial: a bold geometric yen sign in deep pine, stroke weight about 11% of the dial diameter, flat terminals.\n- Outside the dial, concentric with it: a thin cream circular arc running over the upper half only, from 9 o'clock to 3 o'clock. Seven short cream radial tick marks cross the arc at even angles, like a measuring scale. The tick at 1 o'clock is ember orange and slightly longer.\n- The arc and ticks form a clean, precise gauge. No other arc, no floating pill, no dot, no sparkles.\n",
+  "generated_at": "2026-11-04T02:45:53+0800",
+  "screenshot_file": "projects/15073270735791219942/files/3ac0600e838d43fcac297a2baace3e87",
+  "svg_file": "projects/15073270735791219942/files/a9bd12c023644e0aac9ba21fe3646217",
+  "model": "GEMINI_3_8_FLASH"
+}

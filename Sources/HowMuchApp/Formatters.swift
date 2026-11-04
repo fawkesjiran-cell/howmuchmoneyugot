@@ -96,6 +96,14 @@ enum Fmt {
         return formatter.string(from: NSNumber(value: safe)) ?? "0.0000"
     }
 
+    /// Compact, fixed-decimals rendering for the small per-second / per-minute
+    /// rates. Keeps 4 decimals for seconds, 3 for minutes and 2 for hours so the
+    /// three cards read as one consistent scale.
+    static func rate(_ value: Double, decimals: Int) -> String {
+        let safe = value.isFinite ? max(0, value) : 0
+        return String(format: "%.*f", max(0, min(decimals, 6)), safe)
+    }
+
     static func count(_ value: Double, language: AppLanguage) -> String {
         let safe = value.isFinite ? max(0, value) : 0
         let formatter = language == .zhHans ? integerZh : integerEn

@@ -31,6 +31,10 @@ enum LKey: Hashable {
     case timelineClockOut
     case timelineOvertime
     case timelineDone
+    case timelineInShort
+    case timelineOutShort
+    case timelineOTShort
+    case timelineDoneShort
     case phaseTitleIdle
     case phaseTitleWorking
     case phaseTitleClockedOut
@@ -42,6 +46,11 @@ enum LKey: Hashable {
 
     // Settings
     case settingsTitle
+    case preferences
+    case paySection
+    case ratesSection
+    case dataSection
+    case paySavedHint
     case monthlySalary
     case workdaysPerMonth
     case hoursPerDay
@@ -52,6 +61,12 @@ enum LKey: Hashable {
     case perHourSuffix
     case daysSuffix
     case hoursSuffix
+    case fullResetTitle
+    case fullResetCaption
+    case fullResetAction
+    case fullResetConfirmTitle
+    case fullResetConfirmMessage
+    case fullResetConfirmAction
 
     // Status item & menus
     case statusAccessibilityLabel
@@ -115,6 +130,10 @@ enum L10n {
         .timelineClockOut: "下班",
         .timelineOvertime: "加班",
         .timelineDone: "收工",
+        .timelineInShort: "上班",
+        .timelineOutShort: "下班",
+        .timelineOTShort: "加班",
+        .timelineDoneShort: "收工",
         .phaseTitleIdle: "待打卡",
         .phaseTitleWorking: "正常计薪中",
         .phaseTitleClockedOut: "已打卡下班",
@@ -125,6 +144,11 @@ enum L10n {
         .resetConfirmMessage: "本次的 %@ 将清零，历史总计会保留。",
 
         .settingsTitle: "设置",
+        .preferences: "偏好",
+        .paySection: "薪资",
+        .ratesSection: "费率",
+        .dataSection: "数据",
+        .paySavedHint: "输入即保存",
         .monthlySalary: "普通月薪",
         .workdaysPerMonth: "每月工作日",
         .hoursPerDay: "每日工时",
@@ -135,6 +159,12 @@ enum L10n {
         .perHourSuffix: "时",
         .daysSuffix: "天",
         .hoursSuffix: "小时",
+        .fullResetTitle: "完全重置",
+        .fullResetCaption: "当前总计 %@，清空后无法恢复",
+        .fullResetAction: "清空",
+        .fullResetConfirmTitle: "完全重置所有金额？",
+        .fullResetConfirmMessage: "总计 %@（含本次 %@）将被永久清空，并停止当前计时。此操作无法撤销。",
+        .fullResetConfirmAction: "完全重置",
 
         .statusAccessibilityLabel: "实时收入",
         .statusAccessibilityValue: "%@，%@",
@@ -181,6 +211,10 @@ enum L10n {
         .timelineClockOut: "Clock out",
         .timelineOvertime: "Overtime",
         .timelineDone: "Done",
+        .timelineInShort: "In",
+        .timelineOutShort: "Out",
+        .timelineOTShort: "OT",
+        .timelineDoneShort: "Done",
         .phaseTitleIdle: "Ready to clock in",
         .phaseTitleWorking: "Earning regular pay",
         .phaseTitleClockedOut: "Clocked out",
@@ -191,6 +225,11 @@ enum L10n {
         .resetConfirmMessage: "This session's %@ will be cleared. Your all-time total is kept.",
 
         .settingsTitle: "Settings",
+        .preferences: "Preferences",
+        .paySection: "Pay",
+        .ratesSection: "Rates",
+        .dataSection: "Data",
+        .paySavedHint: "Saved as you type",
         .monthlySalary: "Monthly salary",
         .workdaysPerMonth: "Workdays per month",
         .hoursPerDay: "Hours per day",
@@ -201,6 +240,12 @@ enum L10n {
         .perHourSuffix: "hr",
         .daysSuffix: "days",
         .hoursSuffix: "hours",
+        .fullResetTitle: "Reset everything",
+        .fullResetCaption: "All-time total %@. This cannot be undone.",
+        .fullResetAction: "Clear",
+        .fullResetConfirmTitle: "Reset everything?",
+        .fullResetConfirmMessage: "Your all-time total of %@ (including %@ from this session) will be permanently cleared, and timing will stop. This cannot be undone.",
+        .fullResetConfirmAction: "Reset all",
 
         .statusAccessibilityLabel: "Live earnings",
         .statusAccessibilityValue: "%@, %@",

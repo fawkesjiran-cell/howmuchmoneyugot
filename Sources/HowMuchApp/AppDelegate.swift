@@ -24,10 +24,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var cancellables = Set<AnyCancellable>()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        AppFont.prepare()
         NSApp.setActivationPolicy(.accessory)
+        if ProcessInfo.processInfo.arguments.contains("--dark") {
+            NSApp.appearance = NSAppearance(named: .darkAqua)
+        }
+        if ProcessInfo.processInfo.arguments.contains("--light") {
+            NSApp.appearance = NSAppearance(named: .aqua)
+        }
         installMainMenu()
 
         statusBarController = StatusBarController(model: model)
+
+        if let index = ProcessInfo.processInfo.arguments.firstIndex(of: "--capture-overtime"),
+           ProcessInfo.processInfo.arguments.count > index + 1 {
+            let path = ProcessInfo.processInfo.arguments[index + 1]
+            let language: AppLanguage = ProcessInfo.processInfo.arguments.contains("--english")
+                ? .english
+                : .zhHans
+            let currency: CurrencyUnit = ProcessInfo.processInfo.arguments.contains("--usd")
+                ? .usd
+                : .cny
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                FirePreview.capture(to: path, language: language, currency: currency)
+            }
+            return
+        }
 
         model.$language
             .dropFirst()

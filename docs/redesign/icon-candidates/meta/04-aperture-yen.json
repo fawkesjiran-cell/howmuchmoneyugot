@@ -1,0 +1,14 @@
+{
+  "slug": "e2",
+  "title": "E · Aperture Yen v2",
+  "screen": "projects/15073270735791219942/screens/e7a62b9cc89149dc95afe3e4d8f0c5e7",
+  "screen_title": "Aperture Yen App Icon",
+  "screen_type": "IMAGE",
+  "width": "1024",
+  "height": "1024",
+  "prompt": "One single macOS app icon artwork. Square 1:1 composition.\nA macOS Big Sur style rounded-square tile (squircle), centered, about 74% of the canvas width, with a soft contact shadow beneath it, on a plain warm off-white #F3F6F4 presentation background. The tile is deep pine green.\nStyle: premium flat vector with subtle machined depth, soft top light, very gentle inner edge highlight. No glassmorphism, no gloss, no sparkles, no emoji, no text labels, no UI window, no phone mockup, no additional icons, no watermark.\nPalette strictly: pine #0F3D2E and #146B4A, cream #F3EBDD, ember #C25A17.\nThe mark must stay readable at 16x16 px: simple silhouette, high contrast, no detail thinner than 3% of the tile width. The only glyph allowed is the yen sign itself.\n\nCONCEPT \"Aperture Yen\": the reductive mark.\n- No coin detail, no gauge, no ticks, no hourglass. Only three elements.\n- One large cream disc, diameter about 62% of the tile, perfectly centered, flat with a very subtle top light.\n- The yen sign is cut out of the disc as pine negative space, bold geometric strokes, stroke weight about 12% of the disc diameter. Both horizontal crossbars are exactly centered on the vertical stem and of equal width; the V arms meet the stem cleanly. The green tile shows through the glyph.\n- One tiny ember-orange circular status dot, diameter about 3.5% of the disc, sits exactly on the disc rim at 1:30.\n- Nothing else. Maximum calm and legibility; a finished logo, not an illustration.\n",
+  "generated_at": "2026-11-04T02:47:50+0800",
+  "screenshot_file": "projects/15073270735791219942/files/85b24e995dcc45c29cf5d42a714bc872",
+  "svg_file": "projects/15073270735791219942/files/17f2d08034b2410d9c392a7d34eb2cc1",
+  "model": "GEMINI_3_8_FLASH"
+}

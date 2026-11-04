@@ -1,0 +1,14 @@
+{
+  "slug": "c4",
+  "title": "C · Hourglass v4",
+  "screen": "projects/15073270735791219942/screens/d7318e195e6f42228c6c6583426fd55e",
+  "screen_title": "Hourglass Yen App Icon",
+  "screen_type": "IMAGE",
+  "width": "1024",
+  "height": "1024",
+  "prompt": "One single macOS app icon artwork. Square 1:1 composition.\nA macOS Big Sur style rounded-square tile (squircle), centered, about 74% of the canvas width, with a soft contact shadow beneath it, on a plain warm off-white #F3F6F4 presentation background. The tile is deep pine green.\nStyle: premium flat vector with subtle machined depth, soft top light, very gentle inner edge highlight. No glassmorphism, no gloss, no sparkles, no emoji, no text labels, no UI window, no phone mockup, no additional icons, no watermark.\nPalette strictly: pine #0F3D2E and #146B4A, cream #F3EBDD, ember #C25A17.\nThe mark must stay readable at 16x16 px: simple silhouette, high contrast, no detail thinner than 3% of the tile width. The only glyph allowed is the yen sign itself.\n\nCONCEPT \"Hourglass\": time is money.\n- Solid cream hourglass silhouette, about 40% of the tile width and 56% of the tile height, centered slightly above the middle. Flat top and bottom caps, two triangular bulbs, a narrow waist. No frame, no glass highlights, no 3D.\n- The lower bulb contains a bold pine yen sign, about 16% of the tile width, centered in the lower bulb, with generous cream margin. It must be fully inside the bulb and must not touch or cross the cream edges.\n- Three tiny ember-orange grains fall through the waist in a vertical line, above the yen. None overlap the yen.\n- Nothing else. Strong, simple silhouette that reads at 16 px.\n",
+  "generated_at": "2026-11-04T02:53:16+0800",
+  "screenshot_file": "projects/15073270735791219942/files/895e13a8acc341a79be06b93b7adb80e",
+  "svg_file": "projects/15073270735791219942/files/06502de1c2324b57ad1557df0b6bfe83",
+  "model": "GEMINI_3_8_FLASH"
+}

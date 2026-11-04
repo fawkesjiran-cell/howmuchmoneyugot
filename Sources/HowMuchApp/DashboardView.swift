@@ -1,6 +1,9 @@
+import Foundation
 import HowMuchCore
 import SwiftUI
 
+/// Pine Ledger dashboard: flat paper, one hairline card, pine for money and
+/// ember only when the session is earning overtime.
 struct DashboardView: View {
     @EnvironmentObject private var model: AppModel
     let openSettings: () -> Void
@@ -8,22 +11,23 @@ struct DashboardView: View {
     @State private var showResetAlert = false
 
     private var snapshot: EarningsSnapshot { model.snapshot }
+    private var isOvertime: Bool { snapshot.phase == .overtime }
 
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 8) {
             header
 
-            VStack(spacing: 13) {
-                heroCard
-                rateCard
-                actionBar
-                timelineCard
+            VStack(spacing: 8) {
+                balance
+                target
+                rates
+                actions
+                rail
             }
-            .padding(.horizontal, 18)
-
-            Spacer(minLength: 0)
+            .padding(.horizontal, 16)
         }
-        .padding(.bottom, 16)
+        .padding(.vertical, 12)
+        .frame(width: 392, height: 320)
         .alert(model.t(.resetConfirmTitle), isPresented: $showResetAlert) {
             Button(model.t(.cancel), role: .cancel) {}
             Button(model.t(.reset), role: .destructive) {
@@ -37,201 +41,236 @@ struct DashboardView: View {
     // MARK: - Header
 
     private var header: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 8) {
             LogoMark(symbol: model.currency.symbol)
 
             Text(AppMetadata.displayName)
-                .font(.system(size: 15.5, weight: .bold, design: .rounded))
+                .font(AppFont.geist(14, .semibold))
+                .tracking(-0.1)
                 .foregroundStyle(Palette.ink)
                 .lineLimit(1)
                 .minimumScaleFactor(0.78)
 
-            Spacer(minLength: 4)
+            Spacer(minLength: 6)
 
-            HeaderIconButton(
-                icon: "arrow.counterclockwise",
-                isEnabled: model.session.hasRecordedTime,
-                help: model.t(.resetThisSession)
-            ) {
-                showResetAlert = true
-            }
+            HStack(spacing: 4) {
+                HeaderIconButton(
+                    icon: "arrow.counterclockwise",
+                    isEnabled: model.session.hasRecordedTime,
+                    help: model.t(.resetThisSession)
+                ) {
+                    showResetAlert = true
+                }
 
-            HeaderIconButton(
-                icon: "gearshape.fill",
-                isEnabled: true,
-                help: model.t(.settings)
-            ) {
-                openSettings()
+                HeaderIconButton(
+                    icon: "gearshape",
+                    isEnabled: true,
+                    help: model.t(.settings)
+                ) {
+                    openSettings()
+                }
             }
         }
-        .padding(.horizontal, 18)
-        .padding(.top, 16)
-        .padding(.bottom, 12)
+        .padding(.horizontal, 32)
+        .frame(height: 36)
     }
 
-    // MARK: - Money
+    // MARK: - Balance
 
-    private var heroCard: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 23, style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [Palette.heroTop, Palette.heroBottom],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
+    private var balance: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 5) {
+                StatusDot(phase: snapshot.phase, help: model.phaseTitle(snapshot.phase))
+
+                Text(model.t(.sessionCurrentLabel))
+                    .font(AppFont.geist(9.5, .medium))
+                    .foregroundStyle(Palette.muted)
+
+                Text("·")
+                    .font(AppFont.geist(9.5, .medium))
+                    .foregroundStyle(Palette.faint)
+
+                Text(model.phaseTitle(snapshot.phase))
+                    .font(AppFont.geist(9.5, .semibold))
+                    .foregroundStyle(
+                        isOvertime
+                            ? Palette.ember
+                            : (snapshot.phase == .idle ? Palette.faint : Palette.secondary)
                     )
-                )
+                    .lineLimit(1)
 
-            Circle()
-                .stroke(Palette.heroText.opacity(0.055), lineWidth: 1)
-                .frame(width: 232, height: 232)
-                .offset(x: 142, y: -72)
-            Circle()
-                .fill(Palette.heroText.opacity(0.03))
-                .frame(width: 156, height: 156)
-                .offset(x: 152, y: 76)
-            Text(model.currency.symbol)
-                .font(.system(size: 152, weight: .black, design: .rounded))
-                .foregroundStyle(Color.white.opacity(0.028))
-                .offset(x: 128, y: 64)
-
-            VStack(alignment: .leading, spacing: 0) {
-                HStack(spacing: 6) {
-                    StatusDot(
-                        phase: snapshot.phase,
-                        help: model.phaseTitle(snapshot.phase)
-                    )
-
-                    Text(model.t(.sessionCurrentLabel))
-                        .font(.system(size: 9.5, weight: .semibold, design: .rounded))
-                        .tracking(0.6)
-                        .foregroundStyle(
-                            showOvertimeRate
-                                ? Color(hex: 0xFFD98A)
-                                : Palette.heroMuted
-                        )
-
-                    Spacer(minLength: 4)
+                if isOvertime {
+                    overtimeChip
                 }
-                .padding(.bottom, 7)
 
-                OvertimeAmount(
-                    symbol: model.currency.symbol,
-                    amount: model.amount(snapshot.total),
-                    isOvertime: showOvertimeRate
-                )
-                .padding(.bottom, 12)
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(
-                    "\(model.t(.earnedThisSession)) \(model.money(snapshot.total))"
-                )
+                Spacer(minLength: 0)
+            }
+            .frame(height: 12)
 
-                HStack(spacing: 8) {
-                    Label(Fmt.duration(snapshot.totalSeconds), systemImage: "timer")
-                        .font(.system(size: 9.5, weight: .medium, design: .rounded).monospacedDigit())
-                        .foregroundStyle(Palette.heroMuted)
+            OvertimeAmount(
+                symbol: model.currency.symbol,
+                amount: model.amount(snapshot.total),
+                isOvertime: isOvertime
+            )
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(height: 46, alignment: .leading)
+            .padding(.top, 7)
 
-                    Spacer(minLength: 6)
+            HStack(spacing: 5) {
+                Text(Fmt.duration(snapshot.totalSeconds))
+                    .font(AppFont.numbers(10.5, .medium))
+                    .foregroundStyle(Palette.muted)
 
-                    HStack(spacing: 5) {
-                        Text(model.t(.totalLabel))
-                            .font(.system(size: 8.5, weight: .medium, design: .rounded))
-                            .foregroundStyle(Palette.heroMuted)
-                        Text(model.money(model.totalEarned))
-                            .font(.system(size: 13.5, weight: .semibold, design: .rounded).monospacedDigit())
-                            .foregroundStyle(Palette.heroText.opacity(0.94))
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.7)
-                    }
-                    .padding(.horizontal, 9)
-                    .padding(.vertical, 5)
+                Circle()
+                    .fill(Palette.faint)
+                    .frame(width: 2, height: 2)
+
+                Text("\(model.t(.totalLabel)) \(model.money(model.totalEarned))")
+                    .font(AppFont.numbers(10.5, .medium))
+                    .foregroundStyle(Palette.faint)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
+            .frame(height: 14)
+            .padding(.top, 5)
+        }
+        .frame(height: 86, alignment: .bottom)
+    }
+
+    private var overtimeChip: some View {
+        let multiplier = model.settings.overtimeMultiplier
+
+        return Group {
+            if multiplier.isFinite, multiplier > 0 {
+                Text(String(format: "×%.1f", multiplier))
+                    .font(AppFont.geist(8, .semibold))
+                    .foregroundStyle(Palette.ember)
+                    .padding(.horizontal, 5)
+                    .frame(height: 14)
                     .background(
-                        Capsule()
-                            .fill(Color.white.opacity(0.09))
-                            .overlay(
-                                Capsule()
-                                    .strokeBorder(Color.white.opacity(0.08), lineWidth: 0.7)
-                            )
+                        RoundedRectangle(cornerRadius: 4, style: .continuous)
+                            .fill(Palette.emberSoft)
                     )
-                    .accessibilityElement(children: .ignore)
-                    .accessibilityLabel(
-                        "\(model.t(.totalLabel)) \(model.money(model.totalEarned))"
-                    )
+            }
+        }
+    }
+
+    // MARK: - Target
+
+    private var target: some View {
+        VStack(spacing: 5) {
+            HStack(spacing: 6) {
+                Text("\(model.t(.dailyTarget)) · \(model.money(model.settings.dailyPay))")
+                    .font(AppFont.geist(9.5, .medium))
+                    .foregroundStyle(Palette.muted)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+
+                Spacer(minLength: 4)
+
+                Text("\(targetPercent)%")
+                    .font(AppFont.numbers(9.5, .semibold))
+                    .foregroundStyle(isOvertime ? Palette.ember : Palette.ink)
+            }
+            .frame(height: 12)
+
+            GeometryReader { proxy in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Palette.sunken)
+
+                    Capsule()
+                        .fill(isOvertime ? Palette.ember : Palette.primary)
+                        .frame(width: proxy.size.width * targetProgress)
                 }
             }
-            .padding(18)
+            .frame(height: 4)
         }
-        .frame(height: 156)
-        .clipShape(RoundedRectangle(cornerRadius: 23, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 23, style: .continuous)
-                .strokeBorder(
-                    showOvertimeRate
-                        ? Color(hex: 0xFFB13B).opacity(0.46)
-                        : Color.white.opacity(0.08),
-                    lineWidth: 0.8
-                )
-        )
-        .shadow(color: Palette.shadow.opacity(0.5), radius: 15, x: 0, y: 8)
+        .frame(height: 22, alignment: .top)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(model.t(.dailyTarget)) \(targetPercent)%")
+    }
+
+    private var targetProgress: Double {
+        guard model.settings.dailyPay > 0 else { return 0 }
+        return min(max(snapshot.total / model.settings.dailyPay, 0), 1)
+    }
+
+    private var targetPercent: Int {
+        guard model.settings.dailyPay > 0 else { return 0 }
+        return Int((snapshot.total / model.settings.dailyPay * 100).rounded())
     }
 
     // MARK: - Rates
 
-    private var showOvertimeRate: Bool {
-        snapshot.phase == .overtime
+    private var rateTint: Color {
+        isOvertime ? Palette.ember : Palette.ink
     }
 
-    private var rateCard: some View {
+    private var rates: some View {
         HStack(spacing: 0) {
             RateMetric(
                 label: model.t(.perSecond),
                 symbol: model.currency.symbol,
-                value: model.amount(snapshot.activePerSecondRate, precise: true),
-                tint: showOvertimeRate ? Palette.goldDeep : Palette.ink
+                value: Fmt.rate(snapshot.activePerSecondRate, decimals: 4),
+                tint: rateTint
             )
-            verticalRule
+
+            rateDivider
+
             RateMetric(
                 label: model.t(.perMinute),
                 symbol: model.currency.symbol,
-                value: model.amount(snapshot.activePerMinuteRate),
-                tint: showOvertimeRate ? Palette.goldDeep : Palette.ink
+                value: Fmt.rate(snapshot.activePerMinuteRate, decimals: 3),
+                tint: rateTint
             )
-            verticalRule
+
+            rateDivider
+
             RateMetric(
                 label: model.t(.perHour),
                 symbol: model.currency.symbol,
                 value: model.amount(snapshot.activeHourlyRate),
-                tint: showOvertimeRate ? Palette.goldDeep : Palette.ink
+                tint: rateTint
             )
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
-        .cardSurface(cornerRadius: 16)
+        .frame(height: 44)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Palette.surface)
+        )
         .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .strokeBorder(
-                    showOvertimeRate ? Palette.gold.opacity(0.32) : Color.clear,
+                    isOvertime ? Palette.ember.opacity(0.18) : Palette.line,
                     lineWidth: 0.8
                 )
         )
     }
 
-    private var verticalRule: some View {
+    private var rateDivider: some View {
         Rectangle()
             .fill(Palette.line)
-            .frame(width: 0.8, height: 25)
-            .padding(.horizontal, 9)
+            .frame(width: 0.8)
+            .padding(.vertical, 9)
     }
 
     // MARK: - Actions
 
-    private var actionBar: some View {
-        HStack(spacing: 3) {
+    private var clockInStyle: ActionTile.Style {
+        guard model.canClockIn else { return .ghost }
+        // After clocking out, starting overtime is the primary next step. Clock
+        // in stays available as a secondary action (it archives this session and
+        // starts a fresh one) so the row never shows two filled primaries.
+        return snapshot.phase == .clockedOut ? .ghost : .pine
+    }
+
+    private var actions: some View {
+        HStack(spacing: 8) {
             ActionTile(
                 title: model.t(.actionInShort),
-                help: model.t(.clockIn),
                 icon: "play.fill",
-                style: .green,
+                style: clockInStyle,
                 isEnabled: model.canClockIn
             ) {
                 model.clockIn()
@@ -239,94 +278,143 @@ struct DashboardView: View {
 
             ActionTile(
                 title: model.t(.actionOutShort),
-                help: model.t(.clockOut),
                 icon: "stop.fill",
-                style: .ink,
+                style: model.canClockOut ? .pine : .ghost,
                 isEnabled: model.canClockOut
             ) {
                 model.clockOut()
             }
 
             ActionTile(
-                title: model.t(.actionOvertimeShort),
-                help: model.t(.startOvertime),
-                icon: "bolt.fill",
-                style: .gold,
-                isEnabled: model.canStartOvertime
+                title: model.t(.startOvertime),
+                icon: "flame",
+                style: model.canStartOvertime ? .ember : .ghost,
+                isEnabled: model.canStartOvertime,
+                showsEmberHint: !model.canStartOvertime && snapshot.phase == .working
             ) {
                 model.startOvertime()
             }
 
             ActionTile(
                 title: model.t(.actionDoneShort),
-                help: model.t(.endOvertime),
                 icon: "checkmark",
-                style: .ink,
+                style: model.canEndOvertime ? .ember : .ghost,
                 isEnabled: model.canEndOvertime
             ) {
                 model.endOvertime()
             }
         }
-        .padding(4)
-        .background(
-            RoundedRectangle(cornerRadius: 17, style: .continuous)
-                .fill(Palette.surface)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 17, style: .continuous)
-                        .strokeBorder(Palette.line, lineWidth: 0.8)
+        .frame(height: 40)
+    }
+
+    // MARK: - Rail
+
+    private var rail: some View {
+        ZStack(alignment: .top) {
+            GeometryReader { proxy in
+                let inset = proxy.size.width * 0.125
+                let length = proxy.size.width * 0.75
+
+                ZStack(alignment: .leading) {
+                    Rectangle()
+                        .fill(Palette.line)
+                        .frame(width: length, height: 1)
+                        .offset(x: inset, y: 5)
+
+                    // The regular (In → Out) and overtime (Out → OT/Done)
+                    // segments have separate extents so a clocked-out day does
+                    // not prematurely turn the line ember.
+                    let regularProgress = min(railProgress, 1.0 / 3.0)
+                    let overtimeProgress = max(0, railProgress - 1.0 / 3.0)
+
+                    if regularProgress > 0 {
+                        Rectangle()
+                            .fill(Palette.primary)
+                            .frame(width: length * regularProgress, height: 1)
+                            .offset(x: inset, y: 5)
+                    }
+
+                    if overtimeProgress > 0 {
+                        Rectangle()
+                            .fill(Palette.ember)
+                            .frame(width: length * overtimeProgress, height: 1)
+                            .offset(x: inset + length / 3, y: 5)
+                    }
+                }
+            }
+
+            HStack(spacing: 0) {
+                RailStop(
+                    label: model.t(.timelineInShort),
+                    time: Fmt.time(model.session.normalStartedAt),
+                    state: inState,
+                    accent: Palette.primary
                 )
-        )
-    }
 
-    // MARK: - Timeline
+                RailStop(
+                    label: model.t(.timelineOutShort),
+                    time: Fmt.time(model.session.normalEndedAt),
+                    state: outState,
+                    accent: Palette.primary
+                )
 
-    private var timelineCard: some View {
-        HStack(spacing: 0) {
-            TimelineIcon(
-                icon: "play.fill",
-                time: Fmt.time(model.session.normalStartedAt),
-                label: model.t(.timelineClockIn),
-                isActive: model.session.phase == .working,
-                tint: Palette.normal
-            )
-            timelineRule
-            TimelineIcon(
-                icon: "stop.fill",
-                time: Fmt.time(model.session.normalEndedAt),
-                label: model.t(.timelineClockOut),
-                isActive: false,
-                tint: Palette.normal
-            )
-            timelineRule
-            TimelineIcon(
-                icon: "bolt.fill",
-                time: Fmt.time(model.session.overtimeStartedAt),
-                label: model.t(.timelineOvertime),
-                isActive: model.session.phase == .overtime,
-                tint: Palette.gold
-            )
-            timelineRule
-            TimelineIcon(
-                icon: "checkmark",
-                time: Fmt.time(model.session.overtimeEndedAt),
-                label: model.t(.timelineDone),
-                isActive: false,
-                tint: Palette.gold
-            )
+                RailStop(
+                    label: model.t(.timelineOTShort),
+                    time: Fmt.time(model.session.overtimeStartedAt),
+                    state: overtimeState,
+                    accent: Palette.ember
+                )
+
+                RailStop(
+                    label: model.t(.timelineDoneShort),
+                    time: Fmt.time(model.session.overtimeEndedAt),
+                    state: doneState,
+                    accent: Palette.primary
+                )
+            }
         }
-        .padding(.vertical, 9)
-        .padding(.horizontal, 6)
-        .cardSurface(cornerRadius: 15)
+        .frame(height: 28)
     }
 
-    private var timelineRule: some View {
-        Rectangle()
-            .fill(Palette.line)
-            .frame(width: 0.8, height: 22)
+    private var railProgress: CGFloat {
+        switch snapshot.phase {
+        case .idle, .working: return 0
+        case .clockedOut: return 1.0 / 3.0
+        case .overtime: return 2.0 / 3.0
+        case .finished: return 1
+        }
+    }
+
+    private var inState: RailState {
+        switch snapshot.phase {
+        case .idle: return .future
+        case .working: return .active
+        case .clockedOut, .overtime, .finished: return .complete
+        }
+    }
+
+    private var outState: RailState {
+        switch snapshot.phase {
+        case .idle, .working: return .future
+        case .clockedOut: return .active
+        case .overtime, .finished: return .complete
+        }
+    }
+
+    private var overtimeState: RailState {
+        switch snapshot.phase {
+        case .idle, .working, .clockedOut: return .future
+        case .overtime: return .active
+        case .finished: return .complete
+        }
+    }
+
+    private var doneState: RailState {
+        snapshot.phase == .finished ? .active : .future
     }
 }
 
-// MARK: - Components
+// MARK: - Pieces
 
 struct LogoMark: View {
     let symbol: String
@@ -334,70 +422,14 @@ struct LogoMark: View {
     var body: some View {
         ZStack {
             Circle()
-                .fill(
-                    LinearGradient(
-                        colors: [Palette.normal, Palette.normalDeep],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-            Circle()
-                .strokeBorder(Color.white.opacity(0.18), lineWidth: 0.8)
+                .fill(Palette.primary)
+
             Text(symbol)
-                .font(.system(size: symbol.count > 1 ? 12.5 : 17, weight: .bold, design: .rounded))
-                .foregroundStyle(Palette.heroText)
-                .offset(y: -0.5)
-            Circle()
-                .fill(Color.white.opacity(0.45))
-                .frame(width: 3, height: 3)
-                .offset(x: -7.5, y: -8.5)
+                .font(AppFont.geist(13, .semibold))
+                .foregroundStyle(Palette.onPrimary)
         }
-        .frame(width: 34, height: 34)
-        .shadow(color: Palette.normal.opacity(0.22), radius: 6, x: 0, y: 3)
-    }
-}
-
-struct StatusDot: View {
-    let phase: WorkPhase
-    let help: String
-
-    @State private var pulsing = false
-
-    private var color: Color {
-        switch phase {
-        case .working: return Color(hex: 0x7DE2B1)
-        case .overtime: return Color(hex: 0xF5CB7A)
-        case .clockedOut, .finished: return Palette.heroText.opacity(0.46)
-        case .idle: return Palette.heroText.opacity(0.30)
-        }
-    }
-
-    var body: some View {
-        ZStack {
-            if phase.isEarning {
-                Circle()
-                    .fill(color.opacity(0.30))
-                    .frame(width: 13, height: 13)
-                    .scaleEffect(pulsing ? 1.45 : 0.50)
-                    .opacity(pulsing ? 0 : 1)
-            }
-            Circle()
-                .fill(color)
-                .frame(width: 6, height: 6)
-        }
-        .frame(width: 9, height: 9)
-        .help(help)
-        .accessibilityLabel(help)
-        .onAppear(perform: startPulse)
-        .onChange(of: phase) { _ in startPulse() }
-    }
-
-    private func startPulse() {
-        pulsing = false
-        guard phase.isEarning else { return }
-        withAnimation(.easeOut(duration: 1.5).repeatForever(autoreverses: false)) {
-            pulsing = true
-        }
+        .frame(width: 26, height: 26)
+        .accessibilityHidden(true)
     }
 }
 
@@ -412,25 +444,68 @@ struct HeaderIconButton: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: icon)
-                .font(.system(size: 11.5, weight: .semibold))
-                .foregroundStyle(isEnabled ? Palette.secondary : Palette.tertiary.opacity(0.45))
-                .frame(width: 30, height: 30)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(
+                    isEnabled
+                        ? Palette.secondary
+                        : Palette.faint.opacity(0.45)
+                )
+                .frame(width: 28, height: 28)
                 .background(
                     Circle()
-                        .fill(Palette.surface)
-                        .overlay(Circle().strokeBorder(Palette.line, lineWidth: 0.8))
+                        .fill(hovering && isEnabled ? Palette.surfaceMuted : Color.clear)
                 )
-                .overlay(
-                    Circle()
-                        .fill(Color.white.opacity(hovering && isEnabled ? 0.055 : 0))
-                )
-                .opacity(isEnabled ? 1 : 0.55)
+                .contentShape(Circle())
         }
-        .buttonStyle(PressScaleButtonStyle())
+        .buttonStyle(.plain)
         .disabled(!isEnabled)
         .onHover { hovering = $0 }
         .help(help)
         .accessibilityLabel(help)
+    }
+}
+
+struct StatusDot: View {
+    let phase: WorkPhase
+    let help: String
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var expanded = false
+
+    private var tint: Color {
+        switch phase {
+        case .working: return Palette.primary
+        case .overtime: return Palette.ember
+        case .clockedOut, .finished, .idle: return Palette.faint
+        }
+    }
+
+    private var isPulsing: Bool {
+        phase == .working || phase == .overtime
+    }
+
+    var body: some View {
+        ZStack {
+            if isPulsing, !reduceMotion {
+                Circle()
+                    .stroke(tint.opacity(0.35), lineWidth: 0.8)
+                    .frame(width: 5, height: 5)
+                    .scaleEffect(expanded ? 2.1 : 1)
+                    .opacity(expanded ? 0 : 1)
+                    .animation(
+                        .easeOut(duration: 1.8).repeatForever(autoreverses: false),
+                        value: expanded
+                    )
+            }
+
+            Circle()
+                .fill(tint)
+                .frame(width: 5, height: 5)
+        }
+        .frame(width: 5, height: 5)
+        .onAppear { expanded = true }
+        .help(help)
+        .accessibilityHidden(true)
     }
 }
 
@@ -441,123 +516,186 @@ struct RateMetric: View {
     let tint: Color
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 3) {
+        VStack(alignment: .leading, spacing: 2) {
             Text(label)
-                .font(.system(size: 9, weight: .medium, design: .rounded))
-                .foregroundStyle(Palette.secondary)
+                .font(AppFont.geist(8.5, .medium))
+                .foregroundStyle(Palette.muted)
+                .lineLimit(1)
+
             HStack(alignment: .firstTextBaseline, spacing: 1) {
                 Text(symbol)
-                    .font(.system(size: 8, weight: .semibold, design: .rounded))
-                    .foregroundStyle(tint.opacity(0.55))
+                    .font(AppFont.geist(8.5, .semibold))
+                    .foregroundStyle(Palette.faint)
+
                 Text(value)
-                    .font(.system(size: 14, weight: .semibold, design: .rounded).monospacedDigit())
+                    .font(AppFont.numbers(14.5, .semibold))
+                    .tracking(-0.25)
                     .foregroundStyle(tint)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.72)
+                    .minimumScaleFactor(0.7)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 10)
     }
 }
 
 struct ActionTile: View {
     enum Style {
-        case green
-        case gold
-        case ink
+        case ghost
+        case pine
+        case ember
     }
 
     let title: String
-    let help: String
     let icon: String
     let style: Style
     let isEnabled: Bool
+    var showsEmberHint: Bool = false
     let action: () -> Void
 
     @State private var hovering = false
 
-    private var foreground: Color {
-        guard isEnabled else { return Palette.tertiary.opacity(0.6) }
+    private var textColor: Color {
+        guard isEnabled else { return Palette.muted.opacity(0.55) }
+
         switch style {
-        case .green: return Palette.heroText
-        case .gold: return Color(hex: 0x2B1A04)
-        case .ink: return Palette.buttonInkText
+        case .ghost: return Palette.muted
+        case .pine: return Palette.onPrimary
+        case .ember: return Palette.onEmber
         }
     }
 
-    private var background: AnyShapeStyle {
-        guard isEnabled else { return AnyShapeStyle(Color.clear) }
+    private var iconColor: Color {
+        guard isEnabled else {
+            return showsEmberHint
+                ? Palette.ember.opacity(0.55)
+                : Palette.muted.opacity(0.45)
+        }
+
         switch style {
-        case .green:
-            return AnyShapeStyle(
-                LinearGradient(
-                    colors: [Palette.normalDeep, Palette.normal],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-        case .gold:
-            return AnyShapeStyle(
-                LinearGradient(
-                    colors: [Palette.goldDeep, Palette.gold],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-        case .ink:
-            return AnyShapeStyle(Palette.buttonInk)
+        case .ghost: return Palette.muted
+        case .pine: return Palette.onPrimary
+        case .ember: return Palette.onEmber
+        }
+    }
+
+    private var fill: Color {
+        guard isEnabled else { return .clear }
+
+        switch style {
+        case .ghost: return hovering ? Palette.surfaceMuted : .clear
+        case .pine: return hovering ? Palette.primaryHover : Palette.primary
+        case .ember: return hovering ? Palette.ember.opacity(0.90) : Palette.ember
+        }
+    }
+
+    private var border: Color {
+        guard isEnabled else {
+            return showsEmberHint
+                ? Palette.ember.opacity(0.20)
+                : Palette.line
+        }
+
+        switch style {
+        case .ghost: return Palette.line
+        case .pine: return Palette.primary
+        case .ember: return Palette.ember
         }
     }
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 4) {
+            VStack(spacing: 2) {
                 Image(systemName: icon)
-                    .font(.system(size: 11, weight: .bold))
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(iconColor)
+
                 Text(title)
-                    .font(.system(size: 9.5, weight: .semibold, design: .rounded))
+                    .font(AppFont.geist(10, style == .ghost ? .medium : .semibold))
+                    .foregroundStyle(textColor)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.72)
+                    .minimumScaleFactor(0.80)
             }
-            .foregroundStyle(foreground)
             .frame(maxWidth: .infinity)
-            .frame(height: 48)
+            .frame(height: 40)
             .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(background)
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(fill)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Color.white.opacity(hovering && isEnabled ? 0.06 : 0))
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .strokeBorder(border, lineWidth: 0.8)
             )
+            .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         }
         .buttonStyle(PressScaleButtonStyle())
         .disabled(!isEnabled)
         .onHover { hovering = $0 }
-        .help(help)
-        .accessibilityLabel(help)
+        .help(title)
     }
 }
 
-struct TimelineIcon: View {
-    let icon: String
-    let time: String
+enum RailState {
+    case future
+    case active
+    case complete
+}
+
+struct RailStop: View {
     let label: String
-    let isActive: Bool
-    let tint: Color
+    let time: String
+    let state: RailState
+    let accent: Color
+
+    private var nodeColor: Color {
+        switch state {
+        case .future: return Palette.lineStrong
+        case .active, .complete: return accent
+        }
+    }
+
+    private var labelColor: Color {
+        state == .future ? Palette.faint : Palette.muted
+    }
+
+    private var timeColor: Color {
+        switch state {
+        case .future: return Palette.faint
+        case .active: return accent
+        case .complete: return Palette.ink
+        }
+    }
 
     var body: some View {
-        VStack(spacing: 3) {
-            Image(systemName: icon)
-                .font(.system(size: 8, weight: .bold))
-            Text(time)
-                .font(.system(size: 11.5, weight: .semibold, design: .rounded).monospacedDigit())
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
+        VStack(spacing: 4) {
+            ZStack {
+                if state == .active {
+                    Circle()
+                        .fill(accent.opacity(0.16))
+                        .frame(width: 12, height: 12)
+                }
+
+                Circle()
+                    .fill(nodeColor)
+                    .frame(width: 6, height: 6)
+            }
+            .frame(height: 6)
+
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Text(label)
+                    .font(AppFont.geist(8.5, .medium))
+                    .foregroundStyle(labelColor)
+
+                Text(time)
+                    .font(AppFont.numbers(10.5, .semibold))
+                    .foregroundStyle(timeColor)
+            }
+            .lineLimit(1)
+            .minimumScaleFactor(0.78)
         }
-        .foregroundStyle(isActive ? tint : (time == "--:--" ? Palette.tertiary.opacity(0.55) : Palette.ink.opacity(0.78)))
         .frame(maxWidth: .infinity)
-        .help(label)
+        .padding(.top, 2)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(label) \(time)")
     }

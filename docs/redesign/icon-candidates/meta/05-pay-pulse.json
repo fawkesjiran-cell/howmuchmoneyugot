@@ -1,0 +1,14 @@
+{
+  "slug": "f2",
+  "title": "F · Pay Pulse v2",
+  "screen": "projects/15073270735791219942/screens/d2e980b93578477e81e8c3dd967f8a70",
+  "screen_title": "Pay Pulse App Icon",
+  "screen_type": "IMAGE",
+  "width": "1024",
+  "height": "1024",
+  "prompt": "One single macOS app icon artwork. Square 1:1 composition.\nA macOS Big Sur style rounded-square tile (squircle), centered, about 74% of the canvas width, with a soft contact shadow beneath it, on a plain warm off-white #F3F6F4 presentation background. The tile is deep pine green.\nStyle: premium flat vector with subtle machined depth, soft top light, very gentle inner edge highlight. No glassmorphism, no gloss, no sparkles, no emoji, no text labels, no UI window, no phone mockup, no additional icons, no watermark.\nPalette strictly: pine #0F3D2E and #146B4A, cream #F3EBDD, ember #C25A17.\nThe mark must stay readable at 16x16 px: simple silhouette, high contrast, no detail thinner than 3% of the tile width. The only glyph allowed is the yen sign itself.\n\nCONCEPT \"Pay Pulse\": live earnings.\n- Pine tile. A bold cream pulse line enters from the left edge at 58% of the tile height. It runs flat, makes one shallow dip, then one tall clean spike up to 30% of the tile height, then descends in a straight segment that flows into a cream circular coin at 76% width and 47% height. No second bump, no extra spikes.\n- The coin is about 20% of the tile diameter and carries a bold pine yen sign. The line connects smoothly to the coin edge.\n- One ember-orange dot sits at the peak of the spike.\n- No grid, no axis, no other decoration. The line plus coin should read as \"live money\" at 16 px.\n",
+  "generated_at": "2026-11-04T02:54:04+0800",
+  "screenshot_file": "projects/15073270735791219942/files/a6b4749beb6342db88df2a1e481a2fd4",
+  "svg_file": "projects/15073270735791219942/files/dfcf170b5c394d69887e29e0223719be",
+  "model": "GEMINI_3_8_FLASH"
+}
