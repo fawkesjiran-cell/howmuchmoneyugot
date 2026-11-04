@@ -9,6 +9,7 @@ import SwiftUI
 
 /// Store the radians value of Angle for decoding/encoding.
 
+#if compiler(>=6.0)
 extension Angle: @retroactive Codable {
     public init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
@@ -20,3 +21,16 @@ extension Angle: @retroactive Codable {
         try container.encode(self.radians)
     }
 }
+#else
+extension Angle: Codable {
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        self = try Angle(radians: container.decode(Double.self))
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(self.radians)
+    }
+}
+#endif

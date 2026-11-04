@@ -7,7 +7,7 @@ This app uses a locally vendored copy of **Vortex**, a SwiftUI particle system b
 - Source: https://github.com/twostraws/Vortex
 - Vendored revision: `c9efc55beaf0837a8806f06615085365a3257b6d`
 - License: MIT
-- Local changes: the default bitmap particle symbols were replaced with SF Symbols, the bundled asset catalog was omitted, and the local test target was removed from the vendored package manifest.
+- Local changes: the default bitmap particle symbols were replaced with SF Symbols, the bundled asset catalog was omitted, the local test target was removed from the vendored package manifest, and the `Angle` conformance is guarded for Swift 6 / older toolchains.
 
 MIT License
 
