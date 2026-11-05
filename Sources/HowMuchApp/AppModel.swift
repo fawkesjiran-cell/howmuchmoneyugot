@@ -11,6 +11,9 @@ final class AppModel: ObservableObject {
         static let currency = "jinzhang.currency.v1"
         static let theme = "jinzhang.theme.v1"
         static let ledger = "jinzhang.earningsLedger.v1"
+        static let bigMacCounter = "jinzhang.bigMacCounter.v1"
+        static let checkForUpdates = "jinzhang.checkForUpdates.v1"
+        static let autoUpdate = "jinzhang.autoUpdate.v1"
         static let hasLaunched = "jinzhang.hasLaunched.v1"
     }
 
@@ -56,10 +59,55 @@ final class AppModel: ObservableObject {
         }
     }
 
+    /// Optional Easter-egg counter. Off by default so the dashboard stays as
+    /// quiet as before unless the user asks for burgers.
+    @Published var bigMacCounterEnabled: Bool {
+        didSet {
+            guard !isHydrating else { return }
+            defaults.set(bigMacCounterEnabled, forKey: StorageKey.bigMacCounter)
+        }
+    }
+
+    /// Opt-in GitHub Releases update checking. Both switches are off by default
+    /// so the app remains fully local unless the user asks for network access.
+    @Published var checkForUpdatesEnabled: Bool {
+        didSet {
+            guard !isHydrating else { return }
+            defaults.set(checkForUpdatesEnabled, forKey: StorageKey.checkForUpdates)
+            if !checkForUpdatesEnabled, autoUpdateEnabled {
+                autoUpdateEnabled = false
+            }
+            configureUpdater()
+        }
+    }
+
+    @Published var autoUpdateEnabled: Bool {
+        didSet {
+            guard !isHydrating else { return }
+            defaults.set(autoUpdateEnabled, forKey: StorageKey.autoUpdate)
+            if autoUpdateEnabled, !checkForUpdatesEnabled {
+                checkForUpdatesEnabled = true
+            }
+            configureUpdater()
+        }
+    }
+
+    /// True while the status-bar panel is on screen. Dashboard animations check
+    /// this so an off-screen view never plays a drop the user cannot see.
+    @Published private(set) var isPanelPresented = false
+
     @Published private(set) var now: Date
+
+    /// Shared across dashboard visits so a burger that has landed never gets
+    /// repositioned by a later view rebuild.
+    let bigMacPile = BigMacPileModel()
+
+    let updater = UpdateController()
 
     private let defaults: UserDefaults
     private var ticker: Timer?
+    private var updateTimer: Timer?
+    private var updateKickoffTask: Task<Void, Never>?
     private var isHydrating = true
 
     init(defaults: UserDefaults = .standard) {
@@ -88,6 +136,10 @@ final class AppModel: ObservableObject {
             ?? .system
         let initialLedger: EarningsLedger =
             Self.load(EarningsLedger.self, key: StorageKey.ledger, from: defaults) ?? .empty
+        let initialBigMacCounter = defaults.bool(forKey: StorageKey.bigMacCounter)
+        let storedAutoUpdate = defaults.bool(forKey: StorageKey.autoUpdate)
+        let initialCheckForUpdates = defaults.bool(forKey: StorageKey.checkForUpdates)
+            || storedAutoUpdate
 
         self.settings = initialSettings
         self.session = initialSession
@@ -95,14 +147,20 @@ final class AppModel: ObservableObject {
         self.currency = initialCurrency
         self.theme = initialTheme
         self.ledger = initialLedger
+        self.bigMacCounterEnabled = initialBigMacCounter
+        self.checkForUpdatesEnabled = initialCheckForUpdates
+        self.autoUpdateEnabled = storedAutoUpdate
         self.now = Date()
         self.isHydrating = false
 
         startTicker()
+        configureUpdater()
     }
 
     deinit {
         ticker?.invalidate()
+        updateTimer?.invalidate()
+        updateKickoffTask?.cancel()
     }
 
     // MARK: - Derived state
@@ -117,6 +175,22 @@ final class AppModel: ObservableObject {
 
     var hasAnyEarnings: Bool {
         totalEarned > 0
+    }
+
+    // MARK: - Big Mac counter
+
+    var bigMacPrice: BigMacPrice {
+        BigMacIndex.price(for: currency)
+    }
+
+    var bigMacCount: Int {
+        guard bigMacCounterEnabled else { return 0 }
+        return BigMacIndex.count(amount: snapshot.total, currency: currency)
+    }
+
+    func setPanelPresented(_ presented: Bool) {
+        guard isPanelPresented != presented else { return }
+        isPanelPresented = presented
     }
 
     var canClockIn: Bool {
@@ -212,6 +286,72 @@ final class AppModel: ObservableObject {
 
     func useSuggestedOvertimeRate() {
         settings.overtimeHourlyRate = settings.suggestedOvertimeHourlyRate
+    }
+
+    func updateMonthlySalary(_ value: Double) {
+        settings.updateMonthlySalary(value)
+    }
+
+    // MARK: - Updates
+
+    func checkForUpdatesManually() {
+        updater.check(autoUpdate: autoUpdateEnabled)
+    }
+
+    func installAvailableUpdate() {
+        updater.installAvailableUpdate()
+    }
+
+    private func configureUpdater() {
+        updateKickoffTask?.cancel()
+        updateKickoffTask = nil
+
+        guard checkForUpdatesEnabled else {
+            updateTimer?.invalidate()
+            updateTimer = nil
+            updater.disable()
+            return
+        }
+
+        startUpdateTimer()
+
+        updateKickoffTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: 1_200_000_000)
+            guard !Task.isCancelled, let self, self.checkForUpdatesEnabled else { return }
+
+            switch self.updater.status {
+            case .checking, .downloading, .preparing, .installing:
+                return
+            case .available where self.autoUpdateEnabled:
+                self.updater.installAvailableUpdate()
+                return
+            default:
+                break
+            }
+
+            switch self.updater.status {
+            case .upToDate, .available:
+                if let lastChecked = self.updater.lastChecked,
+                   Date().timeIntervalSince(lastChecked) < 600 {
+                    return
+                }
+            default:
+                break
+            }
+            self.updater.check(autoUpdate: self.autoUpdateEnabled)
+        }
+    }
+
+    private func startUpdateTimer() {
+        guard updateTimer == nil else { return }
+        let timer = Timer(timeInterval: 6 * 60 * 60, repeats: true) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                guard let self, self.checkForUpdatesEnabled else { return }
+                self.updater.check(autoUpdate: self.autoUpdateEnabled)
+            }
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        updateTimer = timer
     }
 
     func cycleTheme() {

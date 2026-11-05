@@ -112,6 +112,8 @@ jobs:
           path: |
             electron/release/*.zip
             electron/release/*.dmg
+            electron/release/latest*.yml
+            electron/release/*.blockmap
           if-no-files-found: error
 
   windows:
@@ -139,6 +141,8 @@ jobs:
           path: |
             electron/release/*.exe
             electron/release/*.zip
+            electron/release/latest*.yml
+            electron/release/*.blockmap
           if-no-files-found: error
 
   publish:

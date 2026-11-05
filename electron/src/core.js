@@ -23,6 +23,20 @@
     en: { nativeName: 'English', locale: 'en-US' }
   };
 
+  // Local Big Mac menu prices from The Economist's January 2025 Big Mac Index
+  // (https://github.com/TheEconomist/big-mac-data). One market per display
+  // currency; the index reports the euro area rather than a single country.
+  const BIG_MAC_PRICES = Object.freeze({
+    cny: { code: 'CNY', country: 'China', countryZh: '中国', price: 25.50 },
+    usd: { code: 'USD', country: 'United States', countryZh: '美国', price: 5.79 },
+    eur: { code: 'EUR', country: 'Euro area', countryZh: '欧元区', price: 5.67 },
+    gbp: { code: 'GBP', country: 'United Kingdom', countryZh: '英国', price: 4.59 },
+    jpy: { code: 'JPY', country: 'Japan', countryZh: '日本', price: 480 },
+    hkd: { code: 'HKD', country: 'Hong Kong', countryZh: '中国香港', price: 24 },
+    krw: { code: 'KRW', country: 'South Korea', countryZh: '韩国', price: 5500 },
+    sgd: { code: 'SGD', country: 'Singapore', countryZh: '新加坡', price: 6.95 }
+  });
+
   const DEFAULT_SETTINGS = Object.freeze({
     monthlySalary: 12000,
     workDaysPerMonth: 22,
@@ -74,6 +88,9 @@
       language: 'en',
       currency: 'cny',
       theme: 'system',
+      bigMacCounter: false,
+      checkForUpdates: false,
+      autoUpdate: false,
       hasLaunched: false
     };
   }
@@ -83,6 +100,8 @@
     const language = LANGUAGES[raw.language] ? raw.language : base.language;
     const currency = CURRENCIES[raw.currency] ? raw.currency : base.currency;
     const theme = ['system', 'light', 'dark'].includes(raw.theme) ? raw.theme : base.theme;
+    const autoUpdate = Boolean(raw.autoUpdate);
+    const checkForUpdates = Boolean(raw.checkForUpdates) || autoUpdate;
     const ledger = raw.ledger || {};
     return {
       version: 1,
@@ -95,8 +114,23 @@
       language,
       currency,
       theme,
+      bigMacCounter: Boolean(raw.bigMacCounter),
+      checkForUpdates,
+      autoUpdate,
       hasLaunched: Boolean(raw.hasLaunched)
     };
+  }
+
+  function bigMacPriceFor(currency) {
+    return BIG_MAC_PRICES[currency] || BIG_MAC_PRICES.cny;
+  }
+
+  function bigMacCount(amount, currency) {
+    const price = bigMacPriceFor(currency).price;
+    const value = Number(amount);
+    if (!Number.isFinite(value) || value <= 0 || !(price > 0)) return 0;
+    const count = Math.floor(value / price);
+    return Number.isSafeInteger(count) ? count : 0;
   }
 
   function dailyPay(settings) {
@@ -120,6 +154,15 @@
       dailyPay: dailyPay(s),
       isValid: s.monthlySalary > 0 && s.workDaysPerMonth > 0 && s.hoursPerDay > 0
     };
+  }
+
+  /// Edits the base salary and seeds overtime at 1.5x. A later overtime edit
+  /// can still overwrite the stored rate directly.
+  function updateMonthlySalary(settings, value) {
+    const next = sanitizeSettings(settings);
+    next.monthlySalary = clampNonNegative(value);
+    next.overtimeHourlyRate = rates(next).suggestedOvertimeHourly;
+    return next;
   }
 
   function snapshot(settings, session, now = Date.now()) {
@@ -241,11 +284,15 @@
     CURRENCIES,
     LANGUAGES,
     DEFAULT_SETTINGS,
+    BIG_MAC_PRICES,
     defaultState,
     normalizeState,
     sanitizeSettings,
     normalizeSession,
+    bigMacPriceFor,
+    bigMacCount,
     rates,
+    updateMonthlySalary,
     snapshot,
     applyAction,
     totalEarned,

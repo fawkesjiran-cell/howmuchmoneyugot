@@ -13,3 +13,11 @@ The Electron renderer bundles **Geist** for the interface.
 Electron and Chromium are distributed under their respective open-source
 licenses. The packaged application includes Electron's generated
 `LICENSE.electron.txt` and `LICENSES.chromium.html` resources.
+
+
+## electron-updater
+
+The Electron app uses **electron-updater** for GitHub Releases updates.
+
+- Source: https://github.com/electron-userland/electron-builder
+- License: MIT

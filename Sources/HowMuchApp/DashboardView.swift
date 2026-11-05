@@ -57,6 +57,13 @@ struct DashboardView: View {
                     .allowsHitTesting(false)
             }
         }
+        .overlay(alignment: .topTrailing) {
+            if model.bigMacCounterEnabled {
+                bigMacField
+                    .padding(.top, 58)
+                    .padding(.trailing, 42)
+            }
+        }
         .onDisappear {
             themeNoticeDismissal?.cancel()
             themeNotice = nil
@@ -175,6 +182,12 @@ struct DashboardView: View {
             )
             .frame(maxWidth: .infinity, alignment: .leading)
             .frame(height: 46, alignment: .leading)
+            .padding(
+                .trailing,
+                model.bigMacCounterEnabled
+                    ? BigMacScatterField.width + 8
+                    : 0
+            )
             .padding(.top, 7)
 
             HStack(spacing: 5) {
@@ -214,6 +227,28 @@ struct DashboardView: View {
                     )
             }
         }
+    }
+
+    // MARK: - Big Mac scatter
+
+    private var bigMacField: some View {
+        let price = model.bigMacPrice
+        let hint = model.t(
+            .bigMacPriceHint,
+            price.countryName(in: model.language),
+            model.money(price.localPrice)
+        )
+
+        return BigMacScatterField(
+            count: model.bigMacCount,
+            countText: model.t(.bigMacHoverCount, model.bigMacCount),
+            helpText: hint,
+            pile: model.bigMacPile
+        )
+        .frame(
+            width: BigMacScatterField.width,
+            height: BigMacScatterField.height
+        )
     }
 
     // MARK: - Target

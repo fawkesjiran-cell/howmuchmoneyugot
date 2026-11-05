@@ -90,3 +90,24 @@ If no Apple / Windows secrets are set, the release still builds, but:
 - Windows users may see SmartScreen and need **More info → Run anyway**.
 
 For a frictionless download, configure the signing secrets above.
+
+## Update metadata
+
+The Electron builds use `electron-updater`. Every release must publish the
+generated update metadata together with the installers:
+
+- macOS: `latest-mac.yml` + the universal `.zip.blockmap`
+- Windows: `latest.yml` + the NSIS `.exe.blockmap`
+
+The `Desktop Release` workflow uploads `release/*.yml` and
+`release/*.blockmap` automatically. Without those files the in-app updater can
+check GitHub but will report an update-check error.
+
+macOS Electron auto-update uses Squirrel.Mac and therefore needs the release to
+be signed with a Developer ID (and ideally notarized). Unsigned local builds
+can show the update UI but cannot install macOS updates. Windows NSIS updates
+are handled by electron-updater.
+
+Windows auto-update is supported by the NSIS installer build, which is what
+`latest.yml` points at. The portable `.exe` and the zip build are intended for
+manual updates.

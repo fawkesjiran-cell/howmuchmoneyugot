@@ -14,6 +14,8 @@
       <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="3.6"/><path d="M12 2.8v2.1M12 19.1v2.1M21.2 12h-2.1M4.9 12H2.8M18.5 5.5l-1.5 1.5M7 17l-1.5 1.5M18.5 18.5 17 17M7 7 5.5 5.5"/></symbol>
       <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19.2 15.6A7.7 7.7 0 0 1 8.4 4.8 7.9 7.9 0 1 0 19.2 15.6Z"/></symbol>
       <symbol id="i-reset" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5A8 8 0 1 1 4.7 15"/><path d="M4 4v5.5h5.5"/></symbol>
+      <symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 0 0-14.9-4M4 4v6h6"/><path d="M4 13a8 8 0 0 0 14.9 4M20 20v-6h-6"/></symbol>
+      <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0 4-4m-4 4-4-4M5 19h14"/></symbol>
       <symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="m19 13.5 1.4 1.1-1.8 3.1-1.7-.7a7 7 0 0 1-1.8 1l-.3 1.9h-3.6l-.3-1.9a7 7 0 0 1-1.8-1l-1.7.7-1.8-3.1L6 13.5a7 7 0 0 1 0-3L4.6 9.4l1.8-3.1 1.7.7a7 7 0 0 1 1.8-1L10.2 4h3.6l.3 1.9a7 7 0 0 1 1.8 1l1.7-.7 1.8 3.1-1.4 1.1a7 7 0 0 1 0 3Z"/></symbol>
       <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.8v12.4l10-6.2L8 5.8Z" fill="currentColor"/></symbol>
       <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="1.2" fill="currentColor"/></symbol>
@@ -30,6 +32,7 @@
   </svg>
 
   <div class="app">
+    <div id="bigmacFlash" class="bigmac-flash" aria-hidden="true" hidden>🍔</div>
     <main id="mainView" class="view main-view">
       <header class="topbar">
         <div class="brand">
@@ -58,7 +61,7 @@
             <span id="phaseText" class="phase-text">Ready to clock in</span>
             <span id="otChip" class="ot-chip" hidden>×1.5</span>
           </div>
-          <div class="amount-row">
+          <div id="amountRow" class="amount-row">
             <span id="currencySymbol" class="currency">¥</span>
             <span id="normalAmount" class="amount">0.00</span>
             <canvas id="fireCanvas" class="fire" width="600" height="92" hidden aria-label="Overtime earnings on fire"></canvas>
@@ -129,6 +132,11 @@
           </div>
         </section>
       </div>
+
+      <div id="bigmacField" class="bigmac-field" role="img" hidden>
+        <div id="bigmacPile" class="bigmac-pile" aria-hidden="true"></div>
+        <span id="bigmacHover" class="bigmac-hover" aria-hidden="true">0 Big Macs</span>
+      </div>
     </main>
 
     <main id="settingsView" class="view settings-view" hidden>
@@ -156,6 +164,44 @@
               <svg viewBox="0 0 24 24"><use href="#i-down"></use></svg>
             </span>
           </label>
+        </div>
+
+        <label class="bigmac-row" for="bigmacToggle">
+          <span class="bigmac-row-icon" aria-hidden="true">🍔</span>
+          <span class="bigmac-row-copy">
+            <span id="bigmacTitle" class="bigmac-row-title">How many Big Macs u got?</span>
+          </span>
+          <input id="bigmacToggle" class="switch-input" type="checkbox" />
+          <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+        </label>
+
+        <div class="section-label with-caption">
+          <span id="updatesLabel">Updates</span><span id="updateVersion" class="update-version">v1.5.4</span>
+        </div>
+        <div class="update-card">
+          <label class="update-row" for="checkUpdatesToggle">
+            <span class="update-row-icon primary" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><use href="#i-refresh"></use></svg>
+            </span>
+            <span id="checkUpdatesTitle" class="update-row-title">Check for updates automatically</span>
+            <input id="checkUpdatesToggle" class="switch-input" type="checkbox" />
+            <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+          </label>
+          <div class="update-divider"></div>
+          <label class="update-row" for="autoUpdateToggle">
+            <span class="update-row-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><use href="#i-download"></use></svg>
+            </span>
+            <span id="autoUpdateTitle" class="update-row-title">Download and install automatically</span>
+            <input id="autoUpdateToggle" class="switch-input" type="checkbox" />
+            <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+          </label>
+          <div class="update-divider"></div>
+          <div class="update-footer">
+            <span id="updateStatusDot" class="update-dot" aria-hidden="true"></span>
+            <span id="updateStatus" class="update-status">Automatic checks are off</span>
+            <button id="updateAction" class="update-action" type="button">Check for updates</button>
+          </div>
         </div>
 
         <div class="section-label with-caption">

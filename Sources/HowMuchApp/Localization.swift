@@ -15,6 +15,11 @@ enum LKey: Hashable {
     case language
     case languageHint
     case currency
+    case bigMacCounterTitle
+    case bigMacCounterHint
+    case bigMacHoverCount
+    case bigMacAccessibility
+    case bigMacPriceHint
 
     // Dashboard
     case earnedThisSession
@@ -55,6 +60,28 @@ enum LKey: Hashable {
     case paySection
     case ratesSection
     case dataSection
+    case updatesSection
+    case autoCheckUpdates
+    case autoCheckUpdatesHint
+    case autoInstallUpdates
+    case autoInstallUpdatesHint
+    case checkForUpdates
+    case installUpdate
+    case updateRetry
+    case updateStatusDisabled
+    case updateStatusIdle
+    case updateStatusChecking
+    case updateStatusUpToDate
+    case updateStatusAvailable
+    case updateStatusDownloading
+    case updateStatusPreparing
+    case updateStatusInstalling
+    case updateFailureNetwork
+    case updateFailureMissingAsset
+    case updateFailureChecksum
+    case updateFailureUnsafe
+    case updateFailurePackage
+    case updateFailureInstall
     case paySavedHint
     case monthlySalary
     case workdaysPerMonth
@@ -120,6 +147,11 @@ enum L10n {
         .language: "语言",
         .languageHint: "界面会立即切换",
         .currency: "货币单位",
+        .bigMacCounterTitle: "你挣了几个巨无霸？",
+        .bigMacCounterHint: "把本次收入按当前货币的 Big Mac 价格换成散落在金额旁的汉堡；悬停查看数量。",
+        .bigMacHoverCount: "%d 个巨无霸",
+        .bigMacAccessibility: "本次已赚可买 %d 个巨无霸",
+        .bigMacPriceHint: "《经济学人》Big Mac 指数 · 2025.01 · %@ %@",
 
         .earnedThisSession: "本次已赚",
         .sessionCurrentLabel: "本次",
@@ -158,6 +190,28 @@ enum L10n {
         .paySection: "薪资",
         .ratesSection: "费率",
         .dataSection: "数据",
+        .updatesSection: "更新",
+        .autoCheckUpdates: "自动检查更新",
+        .autoCheckUpdatesHint: "启动时以及每隔几小时在 GitHub Releases 检查新版本。",
+        .autoInstallUpdates: "自动下载并安装",
+        .autoInstallUpdatesHint: "发现新版本后自动校验、安装并重启；失败时保留当前版本。",
+        .checkForUpdates: "检查更新",
+        .installUpdate: "安装更新",
+        .updateRetry: "重试",
+        .updateStatusDisabled: "自动检查未开启",
+        .updateStatusIdle: "尚未检查更新",
+        .updateStatusChecking: "正在检查更新…",
+        .updateStatusUpToDate: "已是最新版本",
+        .updateStatusAvailable: "发现新版本 %@",
+        .updateStatusDownloading: "正在下载 %@…",
+        .updateStatusPreparing: "正在准备更新…",
+        .updateStatusInstalling: "即将重启完成更新…",
+        .updateFailureNetwork: "无法连接 GitHub，请稍后重试。",
+        .updateFailureMissingAsset: "该版本没有可用的 macOS 安装包。",
+        .updateFailureChecksum: "更新包校验失败，已取消安装。",
+        .updateFailureUnsafe: "当前安装位置无法自动更新，请从 Releases 手动下载。",
+        .updateFailurePackage: "更新包无效，已取消安装。",
+        .updateFailureInstall: "自动安装失败，请从 Releases 手动下载。",
         .paySavedHint: "输入即保存",
         .monthlySalary: "普通月薪",
         .workdaysPerMonth: "每月工作日",
@@ -206,6 +260,11 @@ enum L10n {
         .language: "Language",
         .languageHint: "Applies immediately",
         .currency: "Currency",
+        .bigMacCounterTitle: "How many Big Macs u got?",
+        .bigMacCounterHint: "Turns this session's earnings into Big Macs scattered beside the amount. Hover to see the count.",
+        .bigMacHoverCount: "%d Big Macs",
+        .bigMacAccessibility: "%d Big Macs earned this session",
+        .bigMacPriceHint: "The Economist Big Mac Index · Jan 2025 · %@ %@",
 
         .earnedThisSession: "Earned this session",
         .sessionCurrentLabel: "This session",
@@ -244,6 +303,28 @@ enum L10n {
         .paySection: "Pay",
         .ratesSection: "Rates",
         .dataSection: "Data",
+        .updatesSection: "Updates",
+        .autoCheckUpdates: "Check for updates automatically",
+        .autoCheckUpdatesHint: "Checks GitHub Releases at launch and every few hours.",
+        .autoInstallUpdates: "Download and install automatically",
+        .autoInstallUpdatesHint: "Downloads, verifies and relaunches into a new version. If anything fails, the current version is kept.",
+        .checkForUpdates: "Check for updates",
+        .installUpdate: "Install update",
+        .updateRetry: "Retry",
+        .updateStatusDisabled: "Automatic checks are off",
+        .updateStatusIdle: "Not checked yet",
+        .updateStatusChecking: "Checking for updates…",
+        .updateStatusUpToDate: "You're up to date",
+        .updateStatusAvailable: "Version %@ is available",
+        .updateStatusDownloading: "Downloading %@…",
+        .updateStatusPreparing: "Preparing update…",
+        .updateStatusInstalling: "Restarting to finish the update…",
+        .updateFailureNetwork: "Couldn't reach GitHub. Try again.",
+        .updateFailureMissingAsset: "This release has no macOS installer.",
+        .updateFailureChecksum: "The update package failed verification. Installation was cancelled.",
+        .updateFailureUnsafe: "This install location can't be updated automatically. Download from Releases.",
+        .updateFailurePackage: "The update package is invalid. Installation was cancelled.",
+        .updateFailureInstall: "Automatic install failed. Download from Releases.",
         .paySavedHint: "Saved as you type",
         .monthlySalary: "Monthly salary",
         .workdaysPerMonth: "Workdays per month",

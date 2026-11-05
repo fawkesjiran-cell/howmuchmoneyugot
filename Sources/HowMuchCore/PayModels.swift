@@ -97,6 +97,19 @@ public struct PaySettings: Codable, Equatable, Sendable {
         (normalHourlyRate * 1.5 * 100).rounded() / 100
     }
 
+    /// Applies a new monthly salary and seeds overtime at the 1.5x suggestion.
+    /// The caller may still overwrite `overtimeHourlyRate` afterwards; this
+    /// method only runs when the base salary itself is edited.
+    public mutating func updateMonthlySalary(
+        _ value: Double,
+        autoFillOvertime: Bool = true
+    ) {
+        monthlySalary = value.isFinite ? max(0, value) : 0
+        if autoFillOvertime {
+            overtimeHourlyRate = suggestedOvertimeHourlyRate
+        }
+    }
+
     /// Clamps obviously invalid input to a safe value before persisting.
     public mutating func sanitize() {
         if !monthlySalary.isFinite { monthlySalary = 0 }

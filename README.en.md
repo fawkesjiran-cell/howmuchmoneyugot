@@ -24,9 +24,11 @@
 - **Menu bar / system tray** — open the panel from the tray and see the running total at a glance.
 - **Two languages** — English and Simplified Chinese switch instantly.
 - **Eight currencies** — CNY, USD, EUR, GBP, JPY, HKD, KRW, and SGD, with display symbols only.
+- **How many Big Macs u got?** — optional; turn this session's earnings into burgers scattered beside the amount (up to 200 at once), with the exact count on hover.
 - **Light, dark, or system** — one compact button cycles through all three and remembers your choice.
 - **Built to last** — timestamps survive sleep and restarts; no interval drift.
-- **Local-first** — settings and earnings never leave your computer.
+- **GitHub updates** — the native macOS app and the Electron macOS/Windows builds can check, download and install updates from the matching GitHub Release.
+- **Local-first** — settings and earnings never leave your computer; update checks are off by default.
 
 | Overtime | Settings |
 | --- | --- |

@@ -17,6 +17,7 @@ const { pathToFileURL } = require('node:url');
 const { normalizeState, DEFAULT_SETTINGS, defaultState } = require('./core.js');
 const { readState, writeState } = require('./store.cjs');
 const { t } = require('./i18n.js');
+const { createUpdater } = require('./updater.cjs');
 
 const WIDTH = 392;
 const HEIGHT = 320;
@@ -36,6 +37,7 @@ let tray = null;
 let state = defaultState();
 let stateFile = null;
 let quitting = false;
+let updater = null;
 let lastTrayTitle = '';
 let lastTrayTooltip = '';
 let blurTimer = null;
@@ -149,6 +151,16 @@ function createWindow() {
   if (argValue('--theme')) params.set('theme', argValue('--theme'));
   if (argValue('--demo')) params.set('demo', argValue('--demo'));
   if (argValue('--lang')) params.set('lang', argValue('--lang'));
+  if (process.argv.includes('--bigmac')) params.set('bigmac', '1');
+  if (process.argv.includes('--bigmac-drop')) {
+    params.set('bigmac', '1');
+    params.set('bigmacDrop', '1');
+  }
+  if (argValue('--bigmac-count')) {
+    params.set('bigmac', '1');
+    params.set('bigmacCount', argValue('--bigmac-count'));
+  }
+  if (process.argv.includes('--salary-preview')) params.set('salaryPreview', '1');
   if (process.argv.includes('--scroll')) params.set('scroll', '1');
   if (CAPTURE) params.set('capture', '1');
   const url = pathToFileURL(path.join(__dirname, 'renderer', 'index.html'));
@@ -174,6 +186,9 @@ function createWindow() {
   mainWindow.webContents.on('did-finish-load', () => {
     if (CAPTURE) {
       showWindow();
+      const delayIndex = process.argv.indexOf('--capture-delay-ms');
+      const delayValue = delayIndex >= 0 ? Number(process.argv[delayIndex + 1]) : NaN;
+      const captureDelay = Number.isFinite(delayValue) && delayValue > 0 ? delayValue : 1600;
       setTimeout(async () => {
         try {
           const image = await mainWindow.webContents.capturePage();
@@ -185,7 +200,7 @@ function createWindow() {
         }
         quitting = true;
         app.quit();
-      }, 1600);
+      }, captureDelay);
     }
   });
 }
@@ -295,6 +310,11 @@ async function bootstrap() {
   }
   state = normalizeState(state);
   if (argValue('--theme')) state.theme = argValue('--theme');
+  if (argValue('--updates-preview') === '1') {
+    state.checkForUpdates = true;
+    state.autoUpdate = argValue('--updates-auto-preview') === '1';
+    state = normalizeState(state);
+  }
   if (argValue('--screen') === 'settings') {
     // The renderer chooses the route; no persistence is needed.
   }
@@ -302,6 +322,9 @@ async function bootstrap() {
   createWindow();
   createTray();
   installMenu();
+
+  updater = createUpdater({ app, getWindow: () => mainWindow });
+  updater.setPreferences(state.checkForUpdates, state.autoUpdate, { initial: true });
 
   const shouldOpen = !state.hasLaunched || process.argv.includes('--show') || CAPTURE || Boolean(argValue('--screen'));
   if (shouldOpen) {
@@ -319,10 +342,30 @@ async function bootstrap() {
 ipcMain.handle('state:get', () => state);
 
 ipcMain.handle('state:save', (_event, next) => {
+  const previousCheck = state.checkForUpdates;
+  const previousAuto = state.autoUpdate;
   state = normalizeState(next);
   save();
   installMenu();
+  if (updater && (previousCheck !== state.checkForUpdates || previousAuto !== state.autoUpdate)) {
+    updater.setPreferences(state.checkForUpdates, state.autoUpdate);
+  }
   return state;
+});
+
+ipcMain.handle('update:status', () => {
+  return updater ? updater.getStatus() : {
+    state: 'disabled',
+    currentVersion: app.getVersion()
+  };
+});
+
+ipcMain.handle('update:check', () => {
+  return updater ? updater.check() : null;
+});
+
+ipcMain.handle('update:install', () => {
+  return updater ? updater.install() : null;
 });
 
 ipcMain.handle('theme:set', (_event, theme) => {

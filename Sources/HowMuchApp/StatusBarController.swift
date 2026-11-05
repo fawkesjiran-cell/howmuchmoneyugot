@@ -1,6 +1,33 @@
 import AppKit
 import HowMuchCore
+import QuartzCore
 import SwiftUI
+
+/// A tiny emoji-only view that slides across the status item when a new Big Mac
+/// is earned. It never participates in hit testing, so the menu bar item keeps
+/// its normal click target while the burger passes over it.
+private final class BurgerFlashView: NSView {
+    override var isOpaque: Bool { false }
+
+    override func hitTest(_ point: NSPoint) -> NSView? { nil }
+
+    override func draw(_ dirtyRect: NSRect) {
+        super.draw(dirtyRect)
+
+        let text = "🍔" as NSString
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: NSFont.systemFont(ofSize: 15)
+        ]
+        let size = text.size(withAttributes: attributes)
+        let rect = NSRect(
+            x: 0,
+            y: max(0, (bounds.height - size.height) / 2),
+            width: bounds.width,
+            height: size.height
+        )
+        text.draw(in: rect, withAttributes: attributes)
+    }
+}
 
 /// Clicking the first time in a fresh popover window should register, even when
 /// the app was just activated; AppKit otherwise swallows that click.
@@ -30,6 +57,13 @@ final class StatusBarController: NSObject, NSPopoverDelegate {
     private var isMenuTracking = false
     private var lastTitle: String = ""
     private var lastCurrency: CurrencyUnit?
+    private var lastBigMacCount: Int?
+    private var burgerFlashView: BurgerFlashView?
+    private var burgerFlashTimer: Timer?
+    private var burgerFlashToken = 0
+    private var burgerFlashStartedAt: CFTimeInterval = 0
+    private var burgerFlashStartX: CGFloat = 0
+    private var burgerFlashEndX: CGFloat = 0
 
     init(model: AppModel) {
         self.model = model
@@ -47,6 +81,7 @@ final class StatusBarController: NSObject, NSPopoverDelegate {
 
     deinit {
         refreshTimer?.invalidate()
+        burgerFlashTimer?.invalidate()
     }
 
     // MARK: - Public
@@ -57,6 +92,7 @@ final class StatusBarController: NSObject, NSPopoverDelegate {
 
         NSApp.activate(ignoringOtherApps: true)
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+        model.setPanelPresented(true)
         applyAppearance(NSApp.appearance)
         button.highlight(true)
         popover.contentViewController?.view.window?.makeKey()
@@ -82,6 +118,7 @@ final class StatusBarController: NSObject, NSPopoverDelegate {
     func closePopover() {
         guard popover.isShown else { return }
         popover.performClose(nil)
+        model.setPanelPresented(false)
         statusItem.button?.highlight(false)
     }
 
@@ -139,19 +176,121 @@ final class StatusBarController: NSObject, NSPopoverDelegate {
         }
 
         button.setAccessibilityLabel(model.t(.statusAccessibilityLabel))
-        button.toolTip = model.t(
+        let tooltip = model.t(
             .statusTooltip,
             AppMetadata.displayName,
             model.phaseTitle(snapshot.phase),
             allTimeTotal
         )
+        button.toolTip = model.bigMacCounterEnabled
+            ? tooltip + " · " + model.t(.bigMacAccessibility, model.bigMacCount)
+            : tooltip
+        let accessibilityValue = model.t(
+            .statusAccessibilityValue,
+            model.phaseTitle(snapshot.phase),
+            allTimeTotal
+        )
         button.setAccessibilityValue(
-            model.t(
-                .statusAccessibilityValue,
-                model.phaseTitle(snapshot.phase),
-                allTimeTotal
+            model.bigMacCounterEnabled
+                ? accessibilityValue + ", " + model.t(.bigMacAccessibility, model.bigMacCount)
+                : accessibilityValue
+        )
+
+        refreshBigMacCounter(button: button)
+    }
+
+    private func refreshBigMacCounter(button: NSStatusBarButton) {
+        guard model.bigMacCounterEnabled else {
+            lastBigMacCount = nil
+            return
+        }
+
+        let count = model.bigMacCount
+        guard let previous = lastBigMacCount else {
+            lastBigMacCount = count
+            return
+        }
+        lastBigMacCount = count
+
+        guard count > previous else { return }
+        flashBigMac(in: button)
+    }
+
+    private func flashBigMac(in button: NSStatusBarButton) {
+        burgerFlashToken += 1
+        let token = burgerFlashToken
+        burgerFlashTimer?.invalidate()
+        burgerFlashTimer = nil
+        burgerFlashView?.removeFromSuperview()
+        burgerFlashView = nil
+
+        let height = max(button.bounds.height, 22)
+        let width: CGFloat = 22
+        let reduceMotion = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+        let startX = reduceMotion
+            ? (button.bounds.width - width) / 2
+            : -width - 2
+        let endX = reduceMotion ? startX : button.bounds.width + 4
+        let flash = BurgerFlashView(
+            frame: NSRect(
+                x: startX,
+                y: 0,
+                width: width,
+                height: height
             )
         )
+        flash.wantsLayer = true
+        flash.setAccessibilityElement(false)
+        button.addSubview(flash)
+
+        burgerFlashView = flash
+        burgerFlashStartX = startX
+        burgerFlashEndX = endX
+        burgerFlashStartedAt = CACurrentMediaTime()
+
+        // NSView's animator proxy does not animate arbitrary subviews of a
+        // status-bar button reliably, so drive this short slide on the main
+        // run loop at display-ish cadence instead.
+        let timer = Timer(timeInterval: 1.0 / 60.0, repeats: true) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.stepBurgerFlash(token: token)
+            }
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        burgerFlashTimer = timer
+    }
+
+    private func stepBurgerFlash(token: Int) {
+        guard token == burgerFlashToken else { return }
+        guard let flash = burgerFlashView else {
+            burgerFlashTimer?.invalidate()
+            burgerFlashTimer = nil
+            return
+        }
+
+        let duration: CFTimeInterval = 0.78
+        let elapsed = CACurrentMediaTime() - burgerFlashStartedAt
+        let progress = min(max(elapsed / duration, 0), 1)
+        let eased: CGFloat
+        if progress < 0.5 {
+            eased = CGFloat(2 * progress * progress)
+        } else {
+            eased = CGFloat(1 - pow(-2 * progress + 2, 2) / 2)
+        }
+
+        flash.frame.origin.x = burgerFlashStartX
+            + (burgerFlashEndX - burgerFlashStartX) * eased
+
+        if elapsed > 0.58 {
+            flash.alphaValue = max(0, 1 - (elapsed - 0.58) / 0.20)
+        }
+
+        if progress >= 1 {
+            burgerFlashTimer?.invalidate()
+            burgerFlashTimer = nil
+            flash.removeFromSuperview()
+            burgerFlashView = nil
+        }
     }
 
     // MARK: - Interaction
@@ -260,6 +399,7 @@ final class StatusBarController: NSObject, NSPopoverDelegate {
     // MARK: - NSPopoverDelegate
 
     func popoverDidClose(_ notification: Notification) {
+        model.setPanelPresented(false)
         statusItem.button?.highlight(false)
     }
 }

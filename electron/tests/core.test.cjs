@@ -12,7 +12,11 @@ const {
   canClockIn,
   canClockOut,
   canStartOvertime,
-  canEndOvertime
+  canEndOvertime,
+  BIG_MAC_PRICES,
+  bigMacPriceFor,
+  bigMacCount,
+  updateMonthlySalary
 } = require('../src/core.js');
 
 const settings = { monthlySalary: 22000, workDaysPerMonth: 22, hoursPerDay: 8, overtimeHourlyRate: 187.5 };
@@ -25,6 +29,19 @@ test('derives normal and overtime rates', () => {
   assert.equal(r.perSecond, 125 / 3600);
   assert.equal(r.overtimeMultiplier, 1.5);
   assert.equal(r.dailyPay, 1000);
+});
+
+test('monthly salary seeds overtime but keeps a custom override editable', () => {
+  const updated = updateMonthlySalary(settings, 30000);
+  assert.equal(updated.monthlySalary, 30000);
+  assert.equal(updated.overtimeHourlyRate, rates(updated).suggestedOvertimeHourly);
+  assert.equal(updated.overtimeHourlyRate, 255.68);
+
+  const overridden = { ...updated, overtimeHourlyRate: 300 };
+  assert.equal(overridden.overtimeHourlyRate, 300);
+
+  const next = updateMonthlySalary(overridden, 40000);
+  assert.equal(next.overtimeHourlyRate, rates(next).suggestedOvertimeHourly);
 });
 
 test('snapshot earns normal time while working', () => {
@@ -103,4 +120,41 @@ test('normalizes malformed persisted state', () => {
   assert.equal(s.language, 'en');
   assert.equal(s.currency, 'cny');
   assert.equal(s.theme, 'system');
+  assert.equal(s.bigMacCounter, false);
+  assert.equal(s.checkForUpdates, false);
+  assert.equal(s.autoUpdate, false);
+});
+
+test('normalizes the Big Mac counter toggle', () => {
+  assert.equal(normalizeState({}).bigMacCounter, false);
+  assert.equal(normalizeState({ bigMacCounter: true }).bigMacCounter, true);
+  assert.equal(normalizeState({ bigMacCounter: 'yes' }).bigMacCounter, true);
+});
+
+test('normalizes updater preferences', () => {
+  assert.equal(normalizeState({}).checkForUpdates, false);
+  assert.equal(normalizeState({}).autoUpdate, false);
+  assert.equal(normalizeState({ checkForUpdates: true }).checkForUpdates, true);
+  assert.equal(normalizeState({ autoUpdate: true }).autoUpdate, true);
+  assert.equal(normalizeState({ autoUpdate: true }).checkForUpdates, true);
+  assert.equal(normalizeState({ checkForUpdates: false, autoUpdate: true }).checkForUpdates, true);
+});
+
+test('builds Big Mac counts from local index prices', () => {
+  assert.equal(Object.keys(BIG_MAC_PRICES).length, 8);
+  assert.equal(bigMacPriceFor('usd').country, 'United States');
+  assert.equal(bigMacPriceFor('cny').countryZh, '中国');
+  assert.equal(bigMacPriceFor('usd').price, 5.79);
+  assert.equal(bigMacPriceFor('jpy').price, 480);
+  assert.equal(bigMacPriceFor('xxx').code, 'CNY');
+
+  assert.equal(bigMacCount(0, 'usd'), 0);
+  assert.equal(bigMacCount(-1, 'usd'), 0);
+  assert.equal(bigMacCount(5.78, 'usd'), 0);
+  assert.equal(bigMacCount(5.79, 'usd'), 1);
+  assert.equal(bigMacCount(58, 'usd'), 10);
+  assert.equal(bigMacCount(25.5, 'cny'), 1);
+  assert.equal(bigMacCount(1_000_000, 'jpy'), 2083);
+  assert.equal(bigMacCount(Infinity, 'usd'), 0);
+  assert.equal(bigMacCount(NaN, 'usd'), 0);
 });

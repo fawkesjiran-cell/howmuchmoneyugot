@@ -19,12 +19,28 @@ enum FirePreview {
         }
         model.language = language
         model.currency = currency
+        model.setPanelPresented(true)
+        if args.contains("--bigmac")
+            || args.contains("--bigmac-drop")
+            || args.contains("--bigmac-count") {
+            model.bigMacCounterEnabled = true
+        }
         model.settings = PaySettings(
             monthlySalary: 22_000,
             workDaysPerMonth: 22,
             hoursPerDay: 8,
             overtimeHourlyRate: 187.5
         )
+        if args.contains("--salary-preview") {
+            model.updateMonthlySalary(30_000)
+        }
+        if args.contains("--check-updates") {
+            model.checkForUpdatesEnabled = true
+            model.checkForUpdatesManually()
+        }
+        if args.contains("--auto-update-preview") {
+            model.autoUpdateEnabled = true
+        }
         model.ledger = EarningsLedger(completedEarnings: 1_280.40, completedSessions: 4)
         let modeIndex = args.firstIndex(of: "--capture-mode")
         let mode = modeIndex.map { args[$0 + 1] } ?? "overtime"
@@ -60,6 +76,41 @@ enum FirePreview {
             )
         }
 
+        // Debug-only: arrange for the second Big Mac to land shortly after the
+        // preview appears so the drop animation can be inspected in a still.
+        if args.contains("--bigmac-drop") {
+            let price = BigMacIndex.price(for: currency).localPrice
+            let rate = model.settings.normalPerSecondRate
+            if price > 0, rate > 0 {
+                let elapsed = price * 2 / rate - 1.1
+                if elapsed > 0 {
+                    model.session = WorkSession(
+                        phase: .working,
+                        normalStartedAt: now.addingTimeInterval(-elapsed)
+                    )
+                }
+            }
+        }
+
+        // Debug-only: pin the preview to a specific Big Mac count (for checking
+        // dense 200-burger layouts without waiting for a giant salary).
+        if let index = args.firstIndex(of: "--bigmac-count"),
+           args.indices.contains(index + 1),
+           let target = Int(args[index + 1]),
+           target > 0 {
+            let price = BigMacIndex.price(for: currency).localPrice
+            let rate = model.settings.normalPerSecondRate
+            if price > 0, rate > 0 {
+                let elapsed = price * Double(target) / rate
+                if elapsed > 0 {
+                    model.session = WorkSession(
+                        phase: .working,
+                        normalStartedAt: now.addingTimeInterval(-elapsed)
+                    )
+                }
+            }
+        }
+
         let content = AnyView(
             ZStack {
                 AppBackground()
@@ -90,7 +141,14 @@ enum FirePreview {
         window.orderFrontRegardless()
         window.makeKey()
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+        let captureDelay: TimeInterval = {
+            guard let index = args.firstIndex(of: "--capture-delay"),
+                  args.indices.contains(index + 1),
+                  let value = Double(args[index + 1]) else { return 1.5 }
+            return max(0.2, value)
+        }()
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + captureDelay) {
             view.layoutSubtreeIfNeeded()
 
             if ProcessInfo.processInfo.arguments.contains("--capture-scroll"),

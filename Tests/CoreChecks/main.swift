@@ -46,6 +46,29 @@ expectClose(settings.normalPerSecondRate, 125.0 / 3_600, "second rate")
 expectClose(settings.overtimePerMinuteRate, 3.125, "overtime minute rate")
 expectClose(settings.overtimePerSecondRate, 187.5 / 3_600, "overtime second rate")
 
+section("monthly salary seeds overtime but allows a custom override")
+do {
+    var updated = settings
+    updated.updateMonthlySalary(30_000)
+    expectClose(updated.monthlySalary, 30_000, "new monthly salary")
+    expectClose(
+        updated.overtimeHourlyRate,
+        updated.suggestedOvertimeHourlyRate,
+        "overtime should auto-fill at 1.5x"
+    )
+    expectClose(updated.overtimeHourlyRate, 255.68, "1.5x of 30k monthly")
+
+    updated.overtimeHourlyRate = 300
+    expectClose(updated.overtimeHourlyRate, 300, "custom overtime override")
+
+    updated.updateMonthlySalary(40_000)
+    expectClose(
+        updated.overtimeHourlyRate,
+        updated.suggestedOvertimeHourlyRate,
+        "the next salary edit re-seeds 1.5x"
+    )
+}
+
 section("ordinary earnings accumulate by the second")
 do {
     let session = WorkSession(phase: .working, normalStartedAt: start)
@@ -250,6 +273,55 @@ do {
 }
 
 
+section("Big Mac price table")
+do {
+    expect(
+        BigMacIndex.prices.count == CurrencyUnit.allCases.count,
+        "every supported currency needs one local Big Mac price"
+    )
+    for currency in CurrencyUnit.allCases {
+        expect(
+            BigMacIndex.price(for: currency).currency == currency,
+            "price lookup should return the matching row"
+        )
+    }
+
+    expectClose(BigMacIndex.price(for: .cny).localPrice, 25.50)
+    expectClose(BigMacIndex.price(for: .usd).localPrice, 5.79)
+    expectClose(BigMacIndex.price(for: .eur).localPrice, 5.67)
+    expectClose(BigMacIndex.price(for: .gbp).localPrice, 4.59)
+    expectClose(BigMacIndex.price(for: .jpy).localPrice, 480)
+    expectClose(BigMacIndex.price(for: .hkd).localPrice, 24)
+    expectClose(BigMacIndex.price(for: .krw).localPrice, 5_500)
+    expectClose(BigMacIndex.price(for: .sgd).localPrice, 6.95)
+
+    expect(BigMacIndex.price(for: .cny).countryName(in: .zhHans) == "中国")
+    expect(BigMacIndex.price(for: .cny).countryName(in: .english) == "China")
+    expect(BigMacIndex.price(for: .usd).countryName(in: .zhHans) == "美国")
+}
+
+section("Big Mac count")
+do {
+    expect(BigMacIndex.count(amount: 0, currency: .usd) == 0)
+    expect(BigMacIndex.count(amount: -5, currency: .usd) == 0)
+    expect(BigMacIndex.count(amount: 5.78, currency: .usd) == 0)
+    expect(BigMacIndex.count(amount: 5.79, currency: .usd) == 1)
+    expect(BigMacIndex.count(amount: 58, currency: .usd) == 10)
+    expect(BigMacIndex.count(amount: 25.49, currency: .cny) == 0)
+    expect(BigMacIndex.count(amount: 25.50, currency: .cny) == 1)
+    expect(BigMacIndex.count(amount: 25.50 * 4, currency: .cny) == 4)
+    expect(BigMacIndex.count(amount: 1_000_000, currency: .jpy) == 2_083)
+    expect(BigMacIndex.count(amount: .nan, currency: .usd) == 0)
+    expect(BigMacIndex.count(amount: .infinity, currency: .usd) == 0)
+    expect(
+        BigMacIndex.count(
+            amount: .greatestFiniteMagnitude,
+            currency: .usd
+        ) == Int.max
+    )
+}
+
+
 section("persistent earnings ledger")
 do {
     var ledger = EarningsLedger.empty
@@ -275,6 +347,46 @@ do {
     } else {
         expect(false, "ledger encoding round trip failed")
     }
+}
+
+section("update versions and GitHub release assets")
+do {
+    guard let v154 = AppVersion("1.5.4"),
+          let v159 = AppVersion("v1.5.9"),
+          let v1510 = AppVersion("v1.5.10") else {
+        expect(false, "valid versions should parse")
+        exit(1)
+    }
+    expect(v154 == AppVersion("v1.5.4"), "v prefix and plain version should match")
+    expect(v1510 > v159, "1.5.10 should be newer than 1.5.9")
+    expect(v159 > v154, "1.5.9 should be newer than 1.5.4")
+    expect(AppVersion("1.5")?.description == "1.5.0", "missing patch should default to zero")
+    expect(AppVersion("v1.5.4-beta.1") == v154, "prerelease suffix should not change numeric ordering")
+    expect(AppVersion("not-a-version") == nil, "invalid version should be rejected")
+
+    let names = [
+        "How-Much-Money-U-Got-1.5.4-macOS-Electron-universal.zip",
+        "How-Much-Money-U-Got-1.5.4-macOS-Swift.zip",
+        "How-Much-Money-U-Got-1.5.4-Windows-Electron-x64.zip",
+        "SHA256SUMS.txt"
+    ]
+    let swiftAsset = "How-Much-Money-U-Got-1.5.4-macOS-Swift.zip"
+    expect(UpdateCatalog.swiftMacOSAssetName(from: names) == swiftAsset,
+           "Swift macOS zip should be selected")
+    expect(UpdateCatalog.swiftMacOSAssetName(from: ["README.md"]) == nil,
+           "missing Swift asset should be reported")
+
+    let hash = "b68150fadf6c9b38e7adaf64e8b6668495e3b20d86761002001a993d24bcc1a6"
+    let checksums = """
+    f9a6a755cb35ebc082fc1d7e0a75e49de0a787e49d4c7890805c2fbd93805575  How-Much-Money-U-Got-1.5.4-macOS-Electron-universal.zip
+    \(hash)  \(swiftAsset)
+    """
+    expect(UpdateCatalog.checksum(forAssetNamed: swiftAsset, in: checksums) == hash,
+           "checksum for the Swift zip should be found")
+    expect(UpdateCatalog.checksum(forAssetNamed: "missing.zip", in: checksums) == nil,
+           "missing checksum should be reported")
+    expect(UpdateCatalog.isSHA256(hash), "64 hex characters should be a valid checksum")
+    expect(!UpdateCatalog.isSHA256("abc"), "short checksum should be rejected")
 }
 
 if failures == 0 {

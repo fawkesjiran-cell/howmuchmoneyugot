@@ -17,6 +17,10 @@ contextBridge.exposeInMainWorld('desktop', {
   hide: () => ipcRenderer.send('window:hide'),
   quit: () => ipcRenderer.send('window:quit'),
   updateTray: payload => ipcRenderer.send('tray:update', payload),
+  getUpdateStatus: () => ipcRenderer.invoke('update:status'),
+  checkForUpdates: () => ipcRenderer.invoke('update:check'),
+  installUpdate: () => ipcRenderer.invoke('update:install'),
   onCommand: callback => on('command', callback),
-  onThemeChanged: callback => on('theme:changed', callback)
+  onThemeChanged: callback => on('theme:changed', callback),
+  onUpdateStatus: callback => on('update:status', callback)
 });
