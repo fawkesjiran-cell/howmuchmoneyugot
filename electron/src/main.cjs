@@ -9,7 +9,8 @@ const {
   ipcMain,
   nativeImage,
   nativeTheme,
-  screen
+  screen,
+  session
 } = require('electron');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -17,7 +18,6 @@ const { pathToFileURL } = require('node:url');
 const { normalizeState, DEFAULT_SETTINGS, defaultState } = require('./core.js');
 const { readState, writeState } = require('./store.cjs');
 const { t } = require('./i18n.js');
-const { createUpdater } = require('./updater.cjs');
 
 const WIDTH = 392;
 const HEIGHT = 320;
@@ -31,6 +31,62 @@ const argValue = name => {
   const index = process.argv.indexOf(name);
   return index >= 0 ? process.argv[index + 1] : null;
 };
+
+// The packaged offline variant ships an offline.marker resource and never
+// loads electron-updater. The update-enabled variant may only reach GitHub.
+const OFFLINE_BUILD = process.env.HOWMUCH_OFFLINE === '1'
+  || fs.existsSync(path.join(process.resourcesPath, 'offline.marker'));
+const UPDATE_HOSTS = new Set([
+  'github.com',
+  'www.github.com',
+  'api.github.com',
+  'objects.githubusercontent.com',
+  'github-releases.githubusercontent.com',
+  'release-assets.githubusercontent.com'
+]);
+
+// Keep Chromium's background services quiet in both variants. The renderer
+// only ever loads a local file; the update-enabled build talks to GitHub via
+// electron-updater and nothing else.
+app.commandLine.appendSwitch('disable-background-networking');
+app.commandLine.appendSwitch('disable-component-update');
+app.commandLine.appendSwitch('disable-domain-reliability');
+app.commandLine.appendSwitch('disable-client-side-phishing-detection');
+app.commandLine.appendSwitch('disable-sync');
+app.commandLine.appendSwitch('no-pings');
+app.commandLine.appendSwitch('disable-breakpad');
+app.commandLine.appendSwitch('disable-features', [
+  'OptimizationHints',
+  'MediaRouter',
+  'Translate',
+  'AutofillServerCommunication',
+  'CertificateTransparencyComponentUpdater',
+  'InterestFeedContentSuggestions'
+].join(','));
+
+function installNetworkPolicy() {
+  session.defaultSession.setSpellCheckerEnabled(false);
+  session.defaultSession.setPermissionRequestHandler((_contents, _permission, callback) => {
+    callback(false);
+  });
+  session.defaultSession.webRequest.onBeforeRequest(
+    { urls: ['http://*/*', 'https://*/*', 'ws://*/*', 'wss://*/*'] },
+    (details, callback) => {
+      if (OFFLINE_BUILD) {
+        callback({ cancel: true });
+        return;
+      }
+      let allowed = false;
+      try {
+        const url = new URL(details.url);
+        allowed = url.protocol === 'https:' && UPDATE_HOSTS.has(url.hostname);
+      } catch {
+        allowed = false;
+      }
+      callback(allowed ? {} : { cancel: true });
+    }
+  );
+}
 
 let mainWindow = null;
 let tray = null;
@@ -319,12 +375,16 @@ async function bootstrap() {
     // The renderer chooses the route; no persistence is needed.
   }
   applyThemeSource(state.theme);
+  installNetworkPolicy();
   createWindow();
   createTray();
   installMenu();
 
-  updater = createUpdater({ app, getWindow: () => mainWindow });
-  updater.setPreferences(state.checkForUpdates, state.autoUpdate, { initial: true });
+  if (!OFFLINE_BUILD) {
+    const { createUpdater } = require('./updater.cjs');
+    updater = createUpdater({ app, getWindow: () => mainWindow });
+    updater.setPreferences(state.checkForUpdates, state.autoUpdate, { initial: true });
+  }
 
   const shouldOpen = !state.hasLaunched || process.argv.includes('--show') || CAPTURE || Boolean(argValue('--screen'));
   if (shouldOpen) {
@@ -339,7 +399,7 @@ async function bootstrap() {
 
 }
 
-ipcMain.handle('state:get', () => state);
+ipcMain.handle('state:get', () => ({ ...state, offline: OFFLINE_BUILD }));
 
 ipcMain.handle('state:save', (_event, next) => {
   const previousCheck = state.checkForUpdates;
@@ -353,20 +413,22 @@ ipcMain.handle('state:save', (_event, next) => {
   return state;
 });
 
-ipcMain.handle('update:status', () => {
-  return updater ? updater.getStatus() : {
-    state: 'disabled',
-    currentVersion: app.getVersion()
-  };
-});
+if (!OFFLINE_BUILD) {
+  ipcMain.handle('update:status', () => {
+    return updater ? updater.getStatus() : {
+      state: 'disabled',
+      currentVersion: app.getVersion()
+    };
+  });
 
-ipcMain.handle('update:check', () => {
-  return updater ? updater.check() : null;
-});
+  ipcMain.handle('update:check', () => {
+    return updater ? updater.check() : null;
+  });
 
-ipcMain.handle('update:install', () => {
-  return updater ? updater.install() : null;
-});
+  ipcMain.handle('update:install', () => {
+    return updater ? updater.install() : null;
+  });
+}
 
 ipcMain.handle('theme:set', (_event, theme) => {
   state.theme = ['system', 'light', 'dark'].includes(theme) ? theme : 'system';

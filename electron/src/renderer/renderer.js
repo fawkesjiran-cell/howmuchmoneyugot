@@ -48,6 +48,7 @@ let lastTrayTitle = '';
 let lastTrayTooltip = '';
 let lastBigMacCount = null;
 let updateStatus = { state: 'disabled', currentVersion: '' };
+let offlineMode = false;
 let bigmacSpans = new Map();
 let bigmacBodies = [];
 let bigmacNextId = 0;
@@ -612,6 +613,10 @@ function updateStatusText() {
 }
 
 function renderUpdateSettings() {
+  const section = $('updatesSection');
+  if (section) section.hidden = offlineMode;
+  if (offlineMode) return;
+
   const version = updateStatus.currentVersion || '';
   $('updatesLabel').textContent = t('updates');
   $('updateVersion').textContent = version ? `v${version}` : '';
@@ -899,32 +904,34 @@ function bind() {
   $('actionFinish').addEventListener('click', () => { Core.applyAction(state, 'endOvertime'); saveState(); render(); });
   $('clearButton').addEventListener('click', confirmEverythingReset);
 
-  $('checkUpdatesToggle').addEventListener('change', event => {
-    state.checkForUpdates = event.target.checked;
-    if (!state.checkForUpdates) {
-      state.autoUpdate = false;
-    }
-    saveState();
-    render();
-  });
+  if (!offlineMode) {
+    $('checkUpdatesToggle').addEventListener('change', event => {
+      state.checkForUpdates = event.target.checked;
+      if (!state.checkForUpdates) {
+        state.autoUpdate = false;
+      }
+      saveState();
+      render();
+    });
 
-  $('autoUpdateToggle').addEventListener('change', event => {
-    state.autoUpdate = event.target.checked;
-    if (state.autoUpdate) {
-      state.checkForUpdates = true;
-    }
-    saveState();
-    render();
-  });
+    $('autoUpdateToggle').addEventListener('change', event => {
+      state.autoUpdate = event.target.checked;
+      if (state.autoUpdate) {
+        state.checkForUpdates = true;
+      }
+      saveState();
+      render();
+    });
 
-  $('updateAction').addEventListener('click', () => {
-    if (!bridge) return;
-    if (['available', 'downloaded'].includes(updateStatus.state)) {
-      bridge.installUpdate();
-    } else {
-      bridge.checkForUpdates();
-    }
-  });
+    $('updateAction').addEventListener('click', () => {
+      if (!bridge) return;
+      if (['available', 'downloaded'].includes(updateStatus.state)) {
+        bridge.installUpdate();
+      } else {
+        bridge.checkForUpdates();
+      }
+    });
+  }
 
   $('languageSelect').addEventListener('change', event => {
     state.language = event.target.value;
@@ -962,18 +969,20 @@ function bind() {
       render();
     });
     bridge.onCommand(handleCommand);
-    bridge.onUpdateStatus(status => {
-      if (status && typeof status === 'object') {
-        updateStatus = status;
-        if (currentView === 'settings') renderSettings();
-      }
-    });
-    bridge.getUpdateStatus().then(status => {
-      if (status && typeof status === 'object') {
-        updateStatus = status;
-        if (currentView === 'settings') renderSettings();
-      }
-    }).catch(() => {});
+    if (!offlineMode) {
+      bridge.onUpdateStatus(status => {
+        if (status && typeof status === 'object') {
+          updateStatus = status;
+          if (currentView === 'settings') renderSettings();
+        }
+      });
+      bridge.getUpdateStatus().then(status => {
+        if (status && typeof status === 'object') {
+          updateStatus = status;
+          if (currentView === 'settings') renderSettings();
+        }
+      }).catch(() => {});
+    }
   }
 }
 
@@ -982,6 +991,7 @@ async function init() {
   if (bridge) {
     try { loaded = await bridge.getState(); } catch {}
   }
+  offlineMode = Boolean(loaded && loaded.offline);
   state = Core.normalizeState(loaded || Core.defaultState());
   const params = new URLSearchParams(location.search);
   captureMode = params.get('capture') === '1';

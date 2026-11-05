@@ -49,71 +49,38 @@ jobs:
             exit 1
           fi
           echo "CODESIGN_IDENTITY=$IDENTITY" >> "$GITHUB_ENV"
-      - name: Build universal Swift app
+      - name: Build online universal Swift app
         run: |
           bash Scripts/check.sh
           bash Scripts/build_universal_app.sh
-      - name: Package Swift app
+      - name: Package online Swift app
+        env:
+          HOWMUCH_SWIFT_VARIANT: online
         run: bash Scripts/package_swift_app.sh
-      - name: Notarize and staple Swift app
+      - name: Notarize and staple online Swift app
         if: env.MAC_CERTIFICATE_P12 != '' && env.APPLE_ID != '' && env.APPLE_APP_SPECIFIC_PASSWORD != '' && env.APPLE_TEAM_ID != ''
+        env:
+          HOWMUCH_SWIFT_VARIANT: online
+        run: bash Scripts/notarize_swift_app.sh
+      - name: Build offline universal Swift app
+        env:
+          HOWMUCH_OFFLINE: "1"
+        run: bash Scripts/build_universal_app.sh
+      - name: Package offline Swift app
+        env:
+          HOWMUCH_SWIFT_VARIANT: offline
+        run: bash Scripts/package_swift_app.sh
+      - name: Notarize and staple offline Swift app
+        if: env.MAC_CERTIFICATE_P12 != '' && env.APPLE_ID != '' && env.APPLE_APP_SPECIFIC_PASSWORD != '' && env.APPLE_TEAM_ID != ''
+        env:
+          HOWMUCH_SWIFT_VARIANT: offline
         run: bash Scripts/notarize_swift_app.sh
       - uses: actions/upload-artifact@v4
         with:
           name: macos-swift-release
-          path: dist/*Swift.zip
-          if-no-files-found: error
-
-  macos:
-    runs-on: macos-14
-    defaults:
-      run:
-        working-directory: electron
-    env:
-      CSC_IDENTITY_AUTO_DISCOVERY: "true"
-      MAC_CERTIFICATE_P12: ${{ secrets.MAC_CERTIFICATE_P12 }}
-      MAC_CERTIFICATE_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
-      APPLE_ID: ${{ secrets.APPLE_ID }}
-      APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: electron/package-lock.json
-      - run: npm ci
-      - run: npm test
-      - name: Import Developer ID certificate (optional)
-        if: env.MAC_CERTIFICATE_P12 != ''
-        env:
-          KEYCHAIN_PASSWORD: ${{ secrets.MAC_KEYCHAIN_PASSWORD }}
-        run: |
-          set -euo pipefail
-          KEYCHAIN="$RUNNER_TEMP/app-signing.keychain-db"
-          CERT="$RUNNER_TEMP/developer-id.p12"
-          echo "$MAC_CERTIFICATE_P12" | base64 --decode > "$CERT"
-          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
-          security set-keychain-settings -lut 21600 "$KEYCHAIN"
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
-          security import "$CERT" -k "$KEYCHAIN" -P "$MAC_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
-          security list-keychains -d user -s "$KEYCHAIN"
-          security default-keychain -s "$KEYCHAIN"
-      - name: Build macOS Electron (universal, signed when secrets exist)
-        run: npm run pack:mac:release
-      - name: Notarize and staple macOS app
-        if: env.MAC_CERTIFICATE_P12 != '' && env.APPLE_ID != '' && env.APPLE_APP_SPECIFIC_PASSWORD != '' && env.APPLE_TEAM_ID != ''
-        run: bash scripts/notarize-mac.sh
-      - uses: actions/upload-artifact@v4
-        with:
-          name: macos-release
           path: |
-            electron/release/*.zip
-            electron/release/*.dmg
-            electron/release/latest*.yml
-            electron/release/*.blockmap
+            dist/*macOS-Swift.zip
+            dist/*macOS-Offline.zip
           if-no-files-found: error
 
   windows:
@@ -130,24 +97,31 @@ jobs:
           cache-dependency-path: electron/package-lock.json
       - run: npm ci
       - run: npm test
-      - name: Build Windows x64 (NSIS + portable + zip)
+      - name: Build Windows x64 online (NSIS + portable + zip)
         env:
           CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
         run: npm run pack:win
+      - name: Build Windows x64 offline (NSIS + portable + zip)
+        env:
+          CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+        run: npm run pack:win:offline
       - uses: actions/upload-artifact@v4
         with:
           name: windows-release
           path: |
             electron/release/*.exe
             electron/release/*.zip
-            electron/release/latest*.yml
+            electron/release/latest.yml
             electron/release/*.blockmap
+            electron/release-offline/*.exe
+            electron/release-offline/*.zip
           if-no-files-found: error
 
   publish:
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [macos-swift, macos, windows]
+    needs: [macos-swift, windows]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

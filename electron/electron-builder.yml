@@ -18,26 +18,6 @@ extraResources:
   - from: THIRD_PARTY_NOTICES.md
     to: THIRD_PARTY_NOTICES.md
 artifactName: How-Much-Money-U-Got-${version}-${os}-${arch}.${ext}
-mac:
-  artifactName: How-Much-Money-U-Got-${version}-macOS-Electron-${arch}.${ext}
-  category: public.app-category.productivity
-  icon: build/icon.icns
-  minimumSystemVersion: "12.0"
-  hardenedRuntime: true
-  gatekeeperAssess: false
-  entitlements: build/entitlements.mac.plist
-  entitlementsInherit: build/entitlements.mac.plist
-  target:
-    - target: dmg
-      arch:
-        - arm64
-        - x64
-    - target: zip
-      arch:
-        - arm64
-        - x64
-  extendInfo:
-    LSUIElement: true
 win:
   artifactName: How-Much-Money-U-Got-${version}-Windows-Electron-${arch}.${ext}
   icon: build/icon.ico

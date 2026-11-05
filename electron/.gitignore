@@ -8,3 +8,5 @@ release/
 .smoke-userdata/
 .electron-cache/
 .first-run/
+
+release-offline/

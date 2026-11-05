@@ -68,6 +68,7 @@ final class AppModel: ObservableObject {
         }
     }
 
+#if !HOWMUCH_OFFLINE
     /// Opt-in GitHub Releases update checking. Both switches are off by default
     /// so the app remains fully local unless the user asks for network access.
     @Published var checkForUpdatesEnabled: Bool {
@@ -91,6 +92,7 @@ final class AppModel: ObservableObject {
             configureUpdater()
         }
     }
+#endif
 
     /// True while the status-bar panel is on screen. Dashboard animations check
     /// this so an off-screen view never plays a drop the user cannot see.
@@ -102,12 +104,16 @@ final class AppModel: ObservableObject {
     /// repositioned by a later view rebuild.
     let bigMacPile = BigMacPileModel()
 
+#if !HOWMUCH_OFFLINE
     let updater = UpdateController()
+#endif
 
     private let defaults: UserDefaults
     private var ticker: Timer?
+#if !HOWMUCH_OFFLINE
     private var updateTimer: Timer?
     private var updateKickoffTask: Task<Void, Never>?
+#endif
     private var isHydrating = true
 
     init(defaults: UserDefaults = .standard) {
@@ -137,9 +143,11 @@ final class AppModel: ObservableObject {
         let initialLedger: EarningsLedger =
             Self.load(EarningsLedger.self, key: StorageKey.ledger, from: defaults) ?? .empty
         let initialBigMacCounter = defaults.bool(forKey: StorageKey.bigMacCounter)
+#if !HOWMUCH_OFFLINE
         let storedAutoUpdate = defaults.bool(forKey: StorageKey.autoUpdate)
         let initialCheckForUpdates = defaults.bool(forKey: StorageKey.checkForUpdates)
             || storedAutoUpdate
+#endif
 
         self.settings = initialSettings
         self.session = initialSession
@@ -148,19 +156,25 @@ final class AppModel: ObservableObject {
         self.theme = initialTheme
         self.ledger = initialLedger
         self.bigMacCounterEnabled = initialBigMacCounter
+#if !HOWMUCH_OFFLINE
         self.checkForUpdatesEnabled = initialCheckForUpdates
         self.autoUpdateEnabled = storedAutoUpdate
+#endif
         self.now = Date()
         self.isHydrating = false
 
         startTicker()
+#if !HOWMUCH_OFFLINE
         configureUpdater()
+#endif
     }
 
     deinit {
         ticker?.invalidate()
+#if !HOWMUCH_OFFLINE
         updateTimer?.invalidate()
         updateKickoffTask?.cancel()
+#endif
     }
 
     // MARK: - Derived state
@@ -292,6 +306,7 @@ final class AppModel: ObservableObject {
         settings.updateMonthlySalary(value)
     }
 
+#if !HOWMUCH_OFFLINE
     // MARK: - Updates
 
     func checkForUpdatesManually() {
@@ -353,6 +368,8 @@ final class AppModel: ObservableObject {
         RunLoop.main.add(timer, forMode: .common)
         updateTimer = timer
     }
+
+#endif
 
     func cycleTheme() {
         theme = theme.next

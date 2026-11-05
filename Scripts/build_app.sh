@@ -14,6 +14,11 @@ TMP="$ROOT/.build/tmp"
 
 mkdir -p "$BUILD_HOME" "$MODULE_CACHE" "$SWIFT_CACHE" "$TMP" "$ROOT/.build/cache" "$ROOT/.build/config" "$ROOT/.build/security"
 
+SWIFT_FLAGS=()
+if [[ "${HOWMUCH_OFFLINE:-0}" == "1" ]]; then
+    SWIFT_FLAGS+=(-Xswiftc -DHOWMUCH_OFFLINE)
+fi
+
 if [[ -n "${HOWMUCH_BIN:-}" ]]; then
     BIN="$HOWMUCH_BIN"
     echo "==> Using prebuilt universal executable"
@@ -29,7 +34,8 @@ else
         --disable-sandbox \
         --cache-path "$ROOT/.build/cache" \
         --config-path "$ROOT/.build/config" \
-        --security-path "$ROOT/.build/security"
+        --security-path "$ROOT/.build/security" \
+        ${SWIFT_FLAGS[@]+"${SWIFT_FLAGS[@]}"}
 
     BIN="$ROOT/.build/release/$EXECUTABLE"
     if [[ ! -f "$BIN" ]]; then

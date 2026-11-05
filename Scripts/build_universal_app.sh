@@ -7,6 +7,11 @@ EXECUTABLE="HowMuch"
 UNIVERSAL_DIR="$ROOT/.build/universal"
 mkdir -p "$UNIVERSAL_DIR" "$ROOT/.build/home" "$ROOT/.build/tmp" "$ROOT/.build/clang-module-cache" "$ROOT/.build/swift-module-cache"
 
+SWIFT_FLAGS=()
+if [[ "${HOWMUCH_OFFLINE:-0}" == "1" ]]; then
+    SWIFT_FLAGS+=(-Xswiftc -DHOWMUCH_OFFLINE)
+fi
+
 build_arch() {
     local triple="$1"
     local scratch="$2"
@@ -20,7 +25,8 @@ build_arch() {
         --product "$EXECUTABLE" \
         --triple "$triple" \
         --disable-sandbox \
-        --scratch-path "$scratch" >&2
+        --scratch-path "$scratch" \
+        ${SWIFT_FLAGS[@]+"${SWIFT_FLAGS[@]}"} >&2
     find "$scratch" -type f -name "$EXECUTABLE" -perm -111 -print -quit
 }
 

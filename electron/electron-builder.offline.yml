@@ -1,0 +1,41 @@
+appId: com.fawkesjiran.jinzhang.electron
+productName: How Much Money U Got
+asar: true
+npmRebuild: false
+directories:
+  buildResources: build
+  output: release-offline
+files:
+  - src/**/*
+  - package.json
+extraResources:
+  - from: build
+    to: tray
+    filter:
+      - "tray*"
+  - from: LICENSE
+    to: LICENSE
+  - from: THIRD_PARTY_NOTICES.md
+    to: THIRD_PARTY_NOTICES.md
+  - from: build/offline.marker
+    to: offline.marker
+artifactName: How-Much-Money-U-Got-${version}-Windows-Electron-Offline-${arch}.${ext}
+win:
+  artifactName: How-Much-Money-U-Got-${version}-Windows-Electron-Offline-${arch}.${ext}
+  icon: build/icon.ico
+  target:
+    - target: nsis
+      arch:
+        - x64
+    - target: portable
+      arch:
+        - x64
+    - target: zip
+      arch:
+        - x64
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  deleteAppDataOnUninstall: false
+  artifactName: How-Much-Money-U-Got-Offline-Setup-${version}.${ext}

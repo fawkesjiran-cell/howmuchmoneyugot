@@ -22,11 +22,13 @@ struct SettingsView: View {
                         sectionLabel(model.t(.preferences), top: 4)
                         preferences
 
+#if !HOWMUCH_OFFLINE
                         sectionLabel(
                             model.t(.updatesSection),
                             caption: "v\(model.updater.currentVersion)"
                         )
                         UpdateSettingsCard(updater: model.updater)
+#endif
 
                         sectionLabel(model.t(.paySection), caption: model.t(.paySavedHint))
                         payCard
@@ -443,6 +445,7 @@ struct SettingsView: View {
 
 // MARK: - Components
 
+#if !HOWMUCH_OFFLINE
 struct UpdateSettingsCard: View {
     @EnvironmentObject private var model: AppModel
     @ObservedObject var updater: UpdateController
@@ -655,6 +658,8 @@ struct UpdateSettingsCard: View {
         }
     }
 }
+
+#endif
 
 struct PreferenceOption: Identifiable {
     let id: String

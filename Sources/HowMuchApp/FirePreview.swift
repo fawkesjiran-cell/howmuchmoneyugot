@@ -34,6 +34,7 @@ enum FirePreview {
         if args.contains("--salary-preview") {
             model.updateMonthlySalary(30_000)
         }
+#if !HOWMUCH_OFFLINE
         if args.contains("--check-updates") {
             model.checkForUpdatesEnabled = true
             model.checkForUpdatesManually()
@@ -41,6 +42,7 @@ enum FirePreview {
         if args.contains("--auto-update-preview") {
             model.autoUpdateEnabled = true
         }
+#endif
         model.ledger = EarningsLedger(completedEarnings: 1_280.40, completedSessions: 4)
         let modeIndex = args.firstIndex(of: "--capture-mode")
         let mode = modeIndex.map { args[$0 + 1] } ?? "overtime"

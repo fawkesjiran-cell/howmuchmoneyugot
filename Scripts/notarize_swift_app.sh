@@ -4,8 +4,14 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 VERSION="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Resources/Info.plist)"
+VARIANT="${HOWMUCH_SWIFT_VARIANT:-online}"
+if [[ "$VARIANT" == "offline" ]]; then
+    ASSET_VARIANT="macOS-Offline"
+else
+    ASSET_VARIANT="macOS-Swift"
+fi
 APP="$ROOT/dist/How much money u got?.app"
-ZIP="$ROOT/dist/How-Much-Money-U-Got-${VERSION}-macOS-Swift.zip"
+ZIP="$ROOT/dist/How-Much-Money-U-Got-${VERSION}-${ASSET_VARIANT}.zip"
 
 if [[ -z "${APPLE_ID:-}" || -z "${APPLE_APP_SPECIFIC_PASSWORD:-}" || -z "${APPLE_TEAM_ID:-}" ]]; then
     echo "Skipping Swift notarization: Apple credentials are not configured."

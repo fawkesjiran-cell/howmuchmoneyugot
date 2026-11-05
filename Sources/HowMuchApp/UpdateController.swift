@@ -1,3 +1,4 @@
+#if !HOWMUCH_OFFLINE
 import AppKit
 import Combine
 import CryptoKit
@@ -79,7 +80,7 @@ final class UpdateController: ObservableObject {
 
     init() {
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
-            ?? "1.5.5"
+            ?? "1.5.6"
         currentVersion = version
         currentBundleIdentifier = Bundle.main.bundleIdentifier
 
@@ -454,3 +455,5 @@ final class UpdateController: ObservableObject {
         return .network
     }
 }
+
+#endif

@@ -1,11 +1,26 @@
 # Releasing the apps
 
 Pushing a `v*` tag runs `.github/workflows/electron-release.yml`, which builds
-and publishes three app variants:
+and publishes four app variants:
 
-- **macOS Swift** — the original SwiftUI app, universal (arm64 + x64)
-- **macOS Electron** — the Electron app, universal (arm64 + x64)
-- **Windows Electron** — x64 installer, portable exe, and zip
+1. **macOS Swift — Updater** — native SwiftUI app with the in-app GitHub updater.
+2. **Windows Electron — Updater** — NSIS installer/portable/zip with the in-app GitHub updater.
+3. **macOS Swift — Offline** — native SwiftUI app compiled without the updater.
+4. **Windows Electron — Offline** — Windows app built without the updater and with all web requests blocked.
+
+There is no macOS Electron build.
+
+## Network promises
+
+- **Updater builds (1, 2):** the only network traffic is the update check,
+  metadata download, update package download and installer download from
+  GitHub. Chromium background networking, spellcheck downloads and permissions
+  are disabled; any renderer HTTP(S)/WebSocket request is blocked except the
+  GitHub update hosts.
+- **Offline builds (3, 4):** no updater is compiled/loaded, no update IPC is
+  registered, and all HTTP(S)/WebSocket requests are cancelled. The macOS
+  offline binary is compiled with `HOWMUCH_OFFLINE`, which removes the updater
+  entirely.
 
 ## 1. Bump both versions
 
@@ -16,13 +31,9 @@ The tag must match both versions:
 
 Run `npm install --package-lock-only` inside `electron/` if dependencies change.
 
-## 2. Add signing secrets (recommended for directly runnable downloads)
+## 2. Signing
 
-Without signing, macOS will still require right-click → Open after download,
-and Windows may show SmartScreen. The workflow builds unsigned artifacts if
-these are absent.
-
-### macOS — Developer ID Application + notarization
+### macOS Swift — both variants
 
 Add these repository secrets:
 
@@ -31,83 +42,50 @@ Add these repository secrets:
 | `MAC_CERTIFICATE_P12` | base64 of an exported **Developer ID Application** `.p12` |
 | `MAC_CERTIFICATE_PASSWORD` | password used when exporting the `.p12` |
 | `MAC_KEYCHAIN_PASSWORD` | any temporary password used for the CI keychain |
-| `APPLE_ID` | Apple ID enrolled in the Developer Program |
+| `APPLE_ID` | Apple ID enrolled in the Apple Developer Program |
 | `APPLE_APP_SPECIFIC_PASSWORD` | app-specific password for that Apple ID |
 | `APPLE_TEAM_ID` | Apple Developer Team ID |
 
-Export the certificate with its private key, then base64 it:
+The workflow signs both the updater and offline Swift apps, notarizes them,
+staples them, and rebuilds both zips.
 
-```bash
-base64 -i DeveloperID.p12 | pbcopy
-```
-
-The workflow imports the certificate into a temporary keychain. The Swift job
-signs with hardened runtime and notarizes its universal app; the Electron job
-lets electron-builder sign with hardened runtime and then notarizes/staples its
-universal app. Both zips are rebuilt after stapling.
-
-### Windows — code signing
-
-Add:
+### Windows Electron — both variants
 
 | Secret | Value |
 | --- | --- |
 | `WIN_CSC_LINK` | base64 of the `.pfx` code-signing certificate |
 | `WIN_CSC_KEY_PASSWORD` | certificate password |
 
-To base64 the PFX on Windows:
-
-```powershell
-[Convert]::ToBase64String([IO.File]::ReadAllBytes("codesign.pfx")) | Set-Clipboard
-```
-
-electron-builder signs the installer, portable `.exe`, and the app executable
-inside the zip when these are present. Without them, SmartScreen may warn on
-first launch.
+electron-builder signs both the updater and offline Windows installers when
+these are present. Without signing, SmartScreen may warn on first launch.
 
 ## 3. Tag and publish
 
 ```bash
-git tag v1.5.3
-git push origin v1.5.3
+git tag v1.5.6
+git push origin v1.5.6
 ```
 
 The workflow creates a GitHub Release with:
 
-- `How-Much-Money-U-Got-<version>-macOS-Swift.zip`
-- `How-Much-Money-U-Got-<version>-macOS-Electron-universal.zip`
-- `How-Much-Money-U-Got-Setup-<version>.exe`
-- `How-Much-Money-U-Got-<version>-Windows-Electron-x64.exe` (portable)
-- `How-Much-Money-U-Got-<version>-Windows-Electron-x64.zip`
+- `How-Much-Money-U-Got-<version>-macOS-Swift.zip` — macOS updater build
+- `How-Much-Money-U-Got-<version>-macOS-Offline.zip` — macOS offline build
+- `How-Much-Money-U-Got-Setup-<version>.exe` — Windows updater installer
+- `How-Much-Money-U-Got-<version>-Windows-Electron-x64.exe` — Windows updater portable
+- `How-Much-Money-U-Got-<version>-Windows-Electron-x64.zip` — Windows updater zip
+- `How-Much-Money-U-Got-Offline-Setup-<version>.exe` — Windows offline installer
+- `How-Much-Money-U-Got-<version>-Windows-Electron-Offline-x64.exe` — Windows offline portable
+- `How-Much-Money-U-Got-<version>-Windows-Electron-Offline-x64.zip` — Windows offline zip
+- `latest.yml` + `*.blockmap` — Windows updater metadata only
 - `SHA256SUMS.txt`
 
-## Unsigned fallback
+The offline Windows build uses `electron-builder.offline.yml`, writes to
+`release-offline`, and does not publish update metadata. macOS update packages
+are selected by the native updater from the `macOS-Swift` zip; the offline zip
+deliberately does not contain that name.
 
-If no Apple / Windows secrets are set, the release still builds, but:
+## 4. Inspect the release
 
-- macOS users need to right-click the `.app` and choose **Open**, or remove the
-  quarantine attribute manually.
-- Windows users may see SmartScreen and need **More info → Run anyway**.
-
-For a frictionless download, configure the signing secrets above.
-
-## Update metadata
-
-The Electron builds use `electron-updater`. Every release must publish the
-generated update metadata together with the installers:
-
-- macOS: `latest-mac.yml` + the universal `.zip.blockmap`
-- Windows: `latest.yml` + the NSIS `.exe.blockmap`
-
-The `Desktop Release` workflow uploads `release/*.yml` and
-`release/*.blockmap` automatically. Without those files the in-app updater can
-check GitHub but will report an update-check error.
-
-macOS Electron auto-update uses Squirrel.Mac and therefore needs the release to
-be signed with a Developer ID (and ideally notarized). Unsigned local builds
-can show the update UI but cannot install macOS updates. Windows NSIS updates
-are handled by electron-updater.
-
-Windows auto-update is supported by the NSIS installer build, which is what
-`latest.yml` points at. The portable `.exe` and the zip build are intended for
-manual updates.
+Confirm the release contains the four variants and that `latest.yml` points at
+the **online** Windows NSIS installer. Never upload `release-offline/latest.yml`
+or a macOS Electron zip.

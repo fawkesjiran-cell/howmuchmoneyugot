@@ -27,27 +27,47 @@
 - **How many Big Macs u got?** — optional; turn this session's earnings into burgers scattered beside the amount (up to 200 at once), with the exact count on hover.
 - **Light, dark, or system** — one compact button cycles through all three and remembers your choice.
 - **Built to last** — timestamps survive sleep and restarts; no interval drift.
-- **GitHub updates** — the native macOS app and the Electron macOS/Windows builds can check, download and install updates from the matching GitHub Release.
-- **Local-first** — settings and earnings never leave your computer; update checks are off by default.
+- **Controlled GitHub updates** — update-enabled builds can check and install releases from the matching GitHub Release without telemetry.
+- **Local-first** — settings and earnings stay on your computer; offline builds never use the network.
 
 | Overtime | Settings |
 | --- | --- |
 | ![Overtime earnings](docs/overtime-en.png) | ![Settings](docs/settings-en.png) |
 
+## Choose a build
+
+| Build | Platform | Updates | Network |
+| --- | --- | --- | --- |
+| **macOS Swift (Updater)** | macOS 13+ | In-app check / automatic install | Update requests only |
+| **macOS Swift (Offline)** | macOS 13+ | No updater | No network at all |
+| **Windows Electron (Updater)** | Windows 10/11 | In-app check / automatic install | Update requests only |
+| **Windows Electron (Offline)** | Windows 10/11 | No updater | No network at all |
+
+- Updater builds contact GitHub Releases only when an automatic or manual check runs. There is no telemetry, analytics, advertising, or other background transfer.
+- Offline builds contain no updater and block HTTP / HTTPS / WebSocket requests, so they do not send or receive any external data.
+- Update checks are off by default.
+
 ## Available for
 
 | Platform | Build |
 | --- | --- |
-| macOS 13+ | Native Swift app (universal) and Electron app (universal) |
-| Windows 10/11 | Electron app (x64) |
+| macOS 13+ | Native Swift (Updater / Offline) |
+| Windows 10/11 | Electron (Updater / Offline) |
 
-Both macOS variants and the Windows build are available from the
+All four builds are available from the
 [Releases](https://github.com/fawkesjiran-cell/howmuchmoneyugot/releases) page.
+
+macOS Updater: `How-Much-Money-U-Got-<version>-macOS-Swift.zip`
+macOS Offline: `How-Much-Money-U-Got-<version>-macOS-Offline.zip`
+Windows Updater: `How-Much-Money-U-Got-Setup-<version>.exe`
+Windows Offline: `How-Much-Money-U-Got-Offline-Setup-<version>.exe`
+
+> On Windows, automatic updates are provided by the Setup installer. Portable exe and zip builds are suited to manual updates.
 
 ## Tech stack
 
 - **Native macOS** — Swift, SwiftUI, AppKit
-- **macOS and Windows** — Electron, JavaScript, HTML/CSS
+- **Windows** — Electron, JavaScript, HTML/CSS
 - **Overtime motion** — Vortex on Swift, Canvas on Electron
 
 ## Credits
@@ -56,7 +76,7 @@ Both macOS variants and the Windows build are available from the
 - **Geist** typeface by [Vercel](https://github.com/vercel/geist-font), licensed under the SIL Open Font License 1.1.
 - **Vortex** particle system by [Paul Hudson](https://github.com/twostraws/Vortex), licensed under the MIT License.
 - App icon artwork created for this project.
-- Built with [Electron](https://www.electronjs.org) and Chromium; their licenses apply to the cross-platform build.
+- Windows builds use [Electron](https://www.electronjs.org) and Chromium; their licenses apply to those builds.
 
 See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for full third-party license text.
 
