@@ -49,6 +49,7 @@ let lastTrayTooltip = '';
 let lastBigMacCount = null;
 let updateStatus = { state: 'disabled', currentVersion: '' };
 let offlineMode = false;
+let updatePreviewMode = false;
 let bigmacSpans = new Map();
 let bigmacBodies = [];
 let bigmacNextId = 0;
@@ -511,6 +512,35 @@ function pluralCurrency(code) {
   return code;
 }
 
+function renderUpdatePrompt() {
+  const logo = $('logoMark');
+  const button = $('updatePromptButton');
+  if (!logo || !button) return;
+
+  const version = updateStatus.version || updateStatus.currentVersion || '';
+  const active = !offlineMode
+    && Boolean(state.checkForUpdates)
+    && ['available', 'downloaded', 'downloading', 'preparing', 'installing'].includes(updateStatus.state);
+  const busy = ['downloading', 'preparing', 'installing'].includes(updateStatus.state);
+
+  logo.hidden = active;
+  button.hidden = !active;
+
+  if (!active) {
+    button.classList.remove('busy');
+    button.disabled = false;
+    return;
+  }
+
+  const title = t('updatePrompt', version);
+  const hint = t('updatePromptHint', version);
+  button.title = hint;
+  button.setAttribute('aria-label', title);
+  button.setAttribute('aria-description', hint);
+  button.classList.toggle('busy', busy);
+  button.disabled = busy;
+}
+
 function renderChrome() {
   document.documentElement.lang = state.language === 'zh-Hans' ? 'zh-CN' : 'en';
   const data = unit();
@@ -564,6 +594,7 @@ function renderChrome() {
   $('settingsView').hidden = currentView !== 'settings';
   $('mainView').hidden = currentView !== 'main';
   applyTheme();
+  renderUpdatePrompt();
 }
 
 function populateSelects() {
@@ -905,6 +936,13 @@ function bind() {
   $('clearButton').addEventListener('click', confirmEverythingReset);
 
   if (!offlineMode) {
+    $('updatePromptButton').addEventListener('click', () => {
+      if (!bridge) return;
+      if (['available', 'downloaded'].includes(updateStatus.state)) {
+        bridge.installUpdate();
+      }
+    });
+
     $('checkUpdatesToggle').addEventListener('change', event => {
       state.checkForUpdates = event.target.checked;
       if (!state.checkForUpdates) {
@@ -969,16 +1007,18 @@ function bind() {
       render();
     });
     bridge.onCommand(handleCommand);
-    if (!offlineMode) {
+    if (!offlineMode && !updatePreviewMode) {
       bridge.onUpdateStatus(status => {
         if (status && typeof status === 'object') {
           updateStatus = status;
+          renderUpdatePrompt();
           if (currentView === 'settings') renderSettings();
         }
       });
       bridge.getUpdateStatus().then(status => {
         if (status && typeof status === 'object') {
           updateStatus = status;
+          renderUpdatePrompt();
           if (currentView === 'settings') renderSettings();
         }
       }).catch(() => {});
@@ -1008,6 +1048,12 @@ async function init() {
       state = buildDemo(demo);
       if (params.get('theme')) state.theme = params.get('theme');
     }
+  }
+  updatePreviewMode = params.get('updatePreview') === '1';
+  if (updatePreviewMode) {
+    state.checkForUpdates = true;
+    state.autoUpdate = false;
+    updateStatus = { state: 'available', version: '1.5.7', currentVersion: '1.5.6' };
   }
   if (params.get('bigmac') === '1') state.bigMacCounter = true;
   if (params.get('salaryPreview') === '1') {

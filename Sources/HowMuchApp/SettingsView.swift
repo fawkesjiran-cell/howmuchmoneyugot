@@ -22,6 +22,12 @@ struct SettingsView: View {
                         sectionLabel(model.t(.preferences), top: 4)
                         preferences
 
+                        sectionLabel(model.t(.paySection), caption: model.t(.paySavedHint))
+                        payCard
+
+                        sectionLabel(model.t(.ratesSection))
+                        rateCard
+
 #if !HOWMUCH_OFFLINE
                         sectionLabel(
                             model.t(.updatesSection),
@@ -29,12 +35,6 @@ struct SettingsView: View {
                         )
                         UpdateSettingsCard(updater: model.updater)
 #endif
-
-                        sectionLabel(model.t(.paySection), caption: model.t(.paySavedHint))
-                        payCard
-
-                        sectionLabel(model.t(.ratesSection))
-                        rateCard
 
                         sectionLabel(model.t(.dataSection))
                         resetCard

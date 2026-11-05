@@ -24,7 +24,7 @@ walk(root);
 files.sort();
 const lines = files.map(file => {
   const hash = crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
-  return `${hash}  ${path.relative(root, file)}`;
+  return `${hash}  ${path.basename(file)}`;
 });
 fs.writeFileSync(output, `${lines.join('\n')}\n`);
 console.log(`Wrote ${output} (${files.length} files)`);

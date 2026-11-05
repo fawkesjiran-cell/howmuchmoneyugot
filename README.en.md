@@ -44,6 +44,7 @@
 | **Windows Electron (Offline)** | Windows 10/11 | No updater | No network at all |
 
 - Updater builds contact GitHub Releases only when an automatic or manual check runs. There is no telemetry, analytics, advertising, or other background transfer.
+- When a newer version is found, the top-left home icon becomes an update button; the Updates section sits above Reset everything in Settings.
 - Offline builds contain no updater and block HTTP / HTTPS / WebSocket requests, so they do not send or receive any external data.
 - Update checks are off by default.
 

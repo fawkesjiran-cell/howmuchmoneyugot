@@ -82,6 +82,8 @@ enum LKey: Hashable {
     case updateFailureUnsafe
     case updateFailurePackage
     case updateFailureInstall
+    case updatePromptTitle
+    case updatePromptHint
     case paySavedHint
     case monthlySalary
     case workdaysPerMonth
@@ -212,6 +214,8 @@ enum L10n {
         .updateFailureUnsafe: "当前安装位置无法自动更新，请从 Releases 手动下载。",
         .updateFailurePackage: "更新包无效，已取消安装。",
         .updateFailureInstall: "自动安装失败，请从 Releases 手动下载。",
+        .updatePromptTitle: "更新到 %@",
+        .updatePromptHint: "发现新版本 %@，点击安装并重启。",
         .paySavedHint: "输入即保存",
         .monthlySalary: "普通月薪",
         .workdaysPerMonth: "每月工作日",
@@ -325,6 +329,8 @@ enum L10n {
         .updateFailureUnsafe: "This install location can't be updated automatically. Download from Releases.",
         .updateFailurePackage: "The update package is invalid. Installation was cancelled.",
         .updateFailureInstall: "Automatic install failed. Download from Releases.",
+        .updatePromptTitle: "Update to %@",
+        .updatePromptHint: "Version %@ is available. Click to install and restart.",
         .paySavedHint: "Saved as you type",
         .monthlySalary: "Monthly salary",
         .workdaysPerMonth: "Workdays per month",

@@ -36,6 +36,9 @@
     <main id="mainView" class="view main-view">
       <header class="topbar">
         <div class="brand">
+          <button id="updatePromptButton" class="update-prompt" type="button" hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-download"></use></svg>
+          </button>
           <span id="logoMark" class="mark" aria-hidden="true">¥</span>
           <span class="wordmark">How much money u got?</span>
         </div>
@@ -175,37 +178,6 @@
           <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
         </label>
 
-        <div id="updatesSection">
-          <div class="section-label with-caption">
-            <span id="updatesLabel">Updates</span><span id="updateVersion" class="update-version">v1.5.5</span>
-          </div>
-          <div class="update-card">
-          <label class="update-row" for="checkUpdatesToggle">
-            <span class="update-row-icon primary" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><use href="#i-refresh"></use></svg>
-            </span>
-            <span id="checkUpdatesTitle" class="update-row-title">Check for updates automatically</span>
-            <input id="checkUpdatesToggle" class="switch-input" type="checkbox" />
-            <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
-          </label>
-          <div class="update-divider"></div>
-          <label class="update-row" for="autoUpdateToggle">
-            <span class="update-row-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><use href="#i-download"></use></svg>
-            </span>
-            <span id="autoUpdateTitle" class="update-row-title">Download and install automatically</span>
-            <input id="autoUpdateToggle" class="switch-input" type="checkbox" />
-            <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
-          </label>
-          <div class="update-divider"></div>
-          <div class="update-footer">
-            <span id="updateStatusDot" class="update-dot" aria-hidden="true"></span>
-            <span id="updateStatus" class="update-status">Automatic checks are off</span>
-            <button id="updateAction" class="update-action" type="button">Check for updates</button>
-          </div>
-          </div>
-        </div>
-
         <div class="section-label with-caption">
           <span id="payLabel">Pay</span><span id="savedHint">Saved as you type</span>
         </div>
@@ -241,6 +213,37 @@
           <div class="rate-cell"><span id="setRateHourLabel" class="k">per hour</span><span id="setRateHour" class="v">¥0.00</span></div>
           <div class="rate-cell"><span id="setRateMinLabel" class="k">per minute</span><span id="setRateMin" class="v">¥0.000</span></div>
           <div class="rate-cell"><span id="setRateSecLabel" class="k">per second</span><span id="setRateSec" class="v">¥0.0000</span></div>
+        </div>
+
+        <div id="updatesSection">
+          <div class="section-label with-caption">
+            <span id="updatesLabel">Updates</span><span id="updateVersion" class="update-version">v1.5.5</span>
+          </div>
+          <div class="update-card">
+          <label class="update-row" for="checkUpdatesToggle">
+            <span class="update-row-icon primary" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><use href="#i-refresh"></use></svg>
+            </span>
+            <span id="checkUpdatesTitle" class="update-row-title">Check for updates automatically</span>
+            <input id="checkUpdatesToggle" class="switch-input" type="checkbox" />
+            <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+          </label>
+          <div class="update-divider"></div>
+          <label class="update-row" for="autoUpdateToggle">
+            <span class="update-row-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><use href="#i-download"></use></svg>
+            </span>
+            <span id="autoUpdateTitle" class="update-row-title">Download and install automatically</span>
+            <input id="autoUpdateToggle" class="switch-input" type="checkbox" />
+            <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+          </label>
+          <div class="update-divider"></div>
+          <div class="update-footer">
+            <span id="updateStatusDot" class="update-dot" aria-hidden="true"></span>
+            <span id="updateStatus" class="update-status">Automatic checks are off</span>
+            <button id="updateAction" class="update-action" type="button">Check for updates</button>
+          </div>
+          </div>
         </div>
 
         <div id="dataLabel" class="section-label">Data</div>

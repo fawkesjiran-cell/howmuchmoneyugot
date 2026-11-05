@@ -136,6 +136,62 @@ button {
   padding-bottom: 1px;
 }
 
+.mark[hidden],
+.update-prompt[hidden] {
+  display: none;
+}
+
+.update-prompt {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  padding: 0;
+  border: 0.8px solid color-mix(in srgb, var(--on-primary) 34%, transparent);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--primary);
+  color: var(--on-primary);
+  cursor: pointer;
+  transition: transform .14s ease, filter .14s ease;
+}
+
+.update-prompt:hover {
+  transform: scale(1.06);
+  filter: brightness(1.05);
+}
+
+.update-prompt:focus-visible {
+  outline: 1.5px solid var(--muted);
+  outline-offset: 2px;
+}
+
+.update-prompt svg {
+  width: 12px;
+  height: 12px;
+}
+
+.update-prompt.busy {
+  cursor: default;
+  transform: none;
+}
+
+.update-prompt.busy svg { display: none; }
+
+.update-prompt.busy::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid color-mix(in srgb, var(--on-primary) 38%, transparent);
+  border-top-color: var(--on-primary);
+  border-radius: 50%;
+  animation: update-spin .8s linear infinite;
+}
+
+@keyframes update-spin {
+  to { transform: rotate(360deg); }
+}
+
 .wordmark {
   min-width: 0;
   overflow: hidden;

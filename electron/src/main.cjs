@@ -23,6 +23,7 @@ const WIDTH = 392;
 const HEIGHT = 320;
 const ROOT = path.join(__dirname, '..');
 const CAPTURE = process.argv.includes('--capture');
+const UPDATE_PREVIEW = CAPTURE && process.argv.includes('--update-preview');
 const CAPTURE_PATH = (() => {
   const index = process.argv.indexOf('--capture');
   return index >= 0 && process.argv[index + 1] ? process.argv[index + 1] : null;
@@ -217,6 +218,7 @@ function createWindow() {
     params.set('bigmacCount', argValue('--bigmac-count'));
   }
   if (process.argv.includes('--salary-preview')) params.set('salaryPreview', '1');
+  if (UPDATE_PREVIEW) params.set('updatePreview', '1');
   if (process.argv.includes('--scroll')) params.set('scroll', '1');
   if (CAPTURE) params.set('capture', '1');
   const url = pathToFileURL(path.join(__dirname, 'renderer', 'index.html'));
@@ -380,7 +382,7 @@ async function bootstrap() {
   createTray();
   installMenu();
 
-  if (!OFFLINE_BUILD) {
+  if (!OFFLINE_BUILD && !UPDATE_PREVIEW) {
     const { createUpdater } = require('./updater.cjs');
     updater = createUpdater({ app, getWindow: () => mainWindow });
     updater.setPreferences(state.checkForUpdates, state.autoUpdate, { initial: true });

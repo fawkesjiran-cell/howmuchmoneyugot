@@ -42,6 +42,11 @@ enum FirePreview {
         if args.contains("--auto-update-preview") {
             model.autoUpdateEnabled = true
         }
+#if DEBUG
+        if args.contains("--update-preview") {
+            model.previewAvailableUpdate("1.5.7")
+        }
+#endif
 #endif
         model.ledger = EarningsLedger(completedEarnings: 1_280.40, completedSessions: 4)
         let modeIndex = args.firstIndex(of: "--capture-mode")

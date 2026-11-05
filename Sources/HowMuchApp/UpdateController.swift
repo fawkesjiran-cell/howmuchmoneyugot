@@ -38,6 +38,12 @@ final class UpdateController: ObservableObject {
     @Published private(set) var status: Status = .idle
     @Published private(set) var lastChecked: Date?
 
+#if DEBUG
+    func setPreviewStatus(_ preview: Status) {
+        status = preview
+    }
+#endif
+
     let currentVersion: String
 
     private struct GitHubRelease: Decodable {
@@ -80,7 +86,7 @@ final class UpdateController: ObservableObject {
 
     init() {
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
-            ?? "1.5.6"
+            ?? "1.5.7"
         currentVersion = version
         currentBundleIdentifier = Bundle.main.bundleIdentifier
 

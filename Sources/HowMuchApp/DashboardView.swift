@@ -15,6 +15,20 @@ struct DashboardView: View {
     private var snapshot: EarningsSnapshot { model.snapshot }
     private var isOvertime: Bool { snapshot.phase == .overtime }
 
+#if !HOWMUCH_OFFLINE
+    private var updatePrompt: (version: String, busy: Bool)? {
+        guard model.checkForUpdatesEnabled else { return nil }
+        switch model.updater.status {
+        case .available(let version):
+            return (version, false)
+        case .downloading(let version), .preparing(let version), .installing(let version):
+            return (version, true)
+        default:
+            return nil
+        }
+    }
+#endif
+
     var body: some View {
         VStack(spacing: 8) {
             header
@@ -82,7 +96,22 @@ struct DashboardView: View {
 
     private var header: some View {
         HStack(spacing: 8) {
+#if !HOWMUCH_OFFLINE
+            if let prompt = updatePrompt {
+                UpdatePromptMark(
+                    version: prompt.version,
+                    busy: prompt.busy,
+                    title: model.t(.updatePromptTitle, prompt.version),
+                    help: model.t(.updatePromptHint, prompt.version)
+                ) {
+                    model.installAvailableUpdate()
+                }
+            } else {
+                LogoMark(symbol: model.currency.symbol)
+            }
+#else
             LogoMark(symbol: model.currency.symbol)
+#endif
 
             Text(AppMetadata.displayName)
                 .font(AppFont.geist(14, .semibold))
@@ -511,6 +540,51 @@ struct DashboardView: View {
 }
 
 // MARK: - Pieces
+
+#if !HOWMUCH_OFFLINE
+struct UpdatePromptMark: View {
+    let version: String
+    let busy: Bool
+    let title: String
+    let help: String
+    let action: () -> Void
+
+    @State private var hovering = false
+
+    var body: some View {
+        Button(action: action) {
+            ZStack {
+                Circle()
+                    .fill(Palette.primary)
+
+                if busy {
+                    ProgressView()
+                        .controlSize(.small)
+                        .scaleEffect(0.62)
+                        .tint(Palette.onPrimary)
+                } else {
+                    Image(systemName: "arrow.down")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(Palette.onPrimary)
+                }
+
+                Circle()
+                    .strokeBorder(Palette.onPrimary.opacity(0.34), lineWidth: 0.8)
+            }
+            .frame(width: 26, height: 26)
+            .scaleEffect(hovering && !busy ? 1.06 : 1)
+            .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .disabled(busy)
+        .onHover { hovering = $0 }
+        .help(help)
+        .accessibilityLabel(title)
+        .accessibilityHint(help)
+        .accessibilityValue("v\(version)")
+    }
+}
+#endif
 
 struct LogoMark: View {
     let symbol: String

@@ -62,8 +62,8 @@ these are present. Without signing, SmartScreen may warn on first launch.
 ## 3. Tag and publish
 
 ```bash
-git tag v1.5.6
-git push origin v1.5.6
+git tag v1.5.7
+git push origin v1.5.7
 ```
 
 The workflow creates a GitHub Release with:

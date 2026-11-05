@@ -309,6 +309,17 @@ final class AppModel: ObservableObject {
 #if !HOWMUCH_OFFLINE
     // MARK: - Updates
 
+#if DEBUG
+    func previewAvailableUpdate(_ version: String) {
+        checkForUpdatesEnabled = true
+        updateKickoffTask?.cancel()
+        updateKickoffTask = nil
+        updateTimer?.invalidate()
+        updateTimer = nil
+        updater.setPreviewStatus(.available(version))
+    }
+#endif
+
     func checkForUpdatesManually() {
         updater.check(autoUpdate: autoUpdateEnabled)
     }
