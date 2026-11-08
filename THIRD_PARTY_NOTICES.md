@@ -40,3 +40,36 @@ This app bundles **Geist** by Vercel for the Pine Ledger interface.
 - License: SIL Open Font License 1.1 (see `Resources/Fonts/OFL.txt`)
 
 Copyright 2024 The Geist Project Authors. Geist is licensed under the SIL Open Font License, Version 1.1.
+
+## Reicon
+
+The interface icons are adapted from **Reicon**, an open-source icon library
+by Dev Chauhan.
+
+- Source: https://github.com/dqev/reicon
+- Version: 1.2.5
+- License: MIT
+- Local changes: 18 glyphs are bundled as monochrome PDF template images in
+  `Resources/Reicon`; no other changes.
+
+MIT License
+
+Copyright (c) 2025 REICON
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

@@ -1,0 +1,99 @@
+{
+  "source": "Reicon",
+  "version": "1.2.5",
+  "license": "MIT",
+  "url": "https://github.com/dqev/reicon",
+  "note": "Generated from the Outline (O) or Filled (F) weight. PDFs are 24x24 pt, black on transparent, used as template images on macOS.",
+  "icons": [
+    {
+      "file": "dark-light.pdf",
+      "name": "dark-light",
+      "weight": "Outline"
+    },
+    {
+      "file": "sun.pdf",
+      "name": "sun",
+      "weight": "Outline"
+    },
+    {
+      "file": "moon.pdf",
+      "name": "moon",
+      "weight": "Outline"
+    },
+    {
+      "file": "undo-circle.pdf",
+      "name": "undo-circle",
+      "weight": "Outline"
+    },
+    {
+      "file": "arrows-rotate.pdf",
+      "name": "arrows-rotate",
+      "weight": "Outline"
+    },
+    {
+      "file": "download.pdf",
+      "name": "download",
+      "weight": "Outline"
+    },
+    {
+      "file": "gear.pdf",
+      "name": "gear",
+      "weight": "Outline"
+    },
+    {
+      "file": "play.pdf",
+      "name": "play",
+      "weight": "Filled"
+    },
+    {
+      "file": "stop.pdf",
+      "name": "stop",
+      "weight": "Filled"
+    },
+    {
+      "file": "flame.pdf",
+      "name": "flame",
+      "weight": "Filled"
+    },
+    {
+      "file": "check.pdf",
+      "name": "check",
+      "weight": "Filled"
+    },
+    {
+      "file": "chevron-left.pdf",
+      "name": "chevron-left",
+      "weight": "Outline"
+    },
+    {
+      "file": "chevron-down.pdf",
+      "name": "chevron-down",
+      "weight": "Outline"
+    },
+    {
+      "file": "banknote2.pdf",
+      "name": "banknote2",
+      "weight": "Outline"
+    },
+    {
+      "file": "calendar.pdf",
+      "name": "calendar",
+      "weight": "Outline"
+    },
+    {
+      "file": "clock.pdf",
+      "name": "clock",
+      "weight": "Outline"
+    },
+    {
+      "file": "bolt.pdf",
+      "name": "bolt",
+      "weight": "Filled"
+    },
+    {
+      "file": "trash2.pdf",
+      "name": "trash2",
+      "weight": "Outline"
+    }
+  ]
+}

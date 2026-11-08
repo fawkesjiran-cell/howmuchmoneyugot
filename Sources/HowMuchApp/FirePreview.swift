@@ -44,7 +44,7 @@ enum FirePreview {
         }
 #if DEBUG
         if args.contains("--update-preview") {
-            model.previewAvailableUpdate("1.5.7")
+            model.previewAvailableUpdate("1.6.0")
         }
 #endif
 #endif

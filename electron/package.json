@@ -1,6 +1,6 @@
 {
   "name": "how-much-money-u-got",
-  "version": "1.5.7",
+  "version": "1.6.0",
   "description": "A compact earnings ticker for Windows; the native macOS app lives in the repository root.",
   "main": "src/main.cjs",
   "author": "fawkesjiran-cell",

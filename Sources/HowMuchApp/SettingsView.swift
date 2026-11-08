@@ -74,9 +74,7 @@ struct SettingsView: View {
     private var header: some View {
         HStack(spacing: 8) {
             Button(action: close) {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Palette.ink)
+                ReiconIcon(asset: .chevronLeft, size: 15, tint: Palette.ink)
                     .frame(width: 28, height: 28)
                     .background(
                         Circle()
@@ -224,7 +222,7 @@ struct SettingsView: View {
     private var payCard: some View {
         VStack(spacing: 0) {
             SettingNumberRow(
-                icon: "banknote",
+                icon: .banknote2,
                 title: model.t(.monthlySalary),
                 tint: Palette.secondary,
                 value: salaryBinding,
@@ -235,7 +233,7 @@ struct SettingsView: View {
             rowDivider
 
             SettingNumberRow(
-                icon: "calendar",
+                icon: .calendar,
                 title: model.t(.workdaysPerMonth),
                 tint: Palette.secondary,
                 value: settingBinding(\.workDaysPerMonth),
@@ -246,7 +244,7 @@ struct SettingsView: View {
             rowDivider
 
             SettingNumberRow(
-                icon: "clock",
+                icon: .clock,
                 title: model.t(.hoursPerDay),
                 tint: Palette.secondary,
                 value: settingBinding(\.hoursPerDay),
@@ -257,7 +255,7 @@ struct SettingsView: View {
             rowDivider
 
             SettingNumberRow(
-                icon: "bolt",
+                icon: .bolt,
                 title: model.t(.overtimeHourly),
                 tint: Palette.ember,
                 value: settingBinding(\.overtimeHourlyRate),
@@ -344,9 +342,7 @@ struct SettingsView: View {
                     .fill(Palette.danger.opacity(0.12))
                     .frame(width: 26, height: 26)
 
-                Image(systemName: "trash")
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundStyle(Palette.danger)
+                ReiconIcon(asset: .trash2, size: 13, tint: Palette.danger)
             }
 
             VStack(alignment: .leading, spacing: 1) {
@@ -453,7 +449,7 @@ struct UpdateSettingsCard: View {
     var body: some View {
         VStack(spacing: 0) {
             toggleRow(
-                icon: "arrow.triangle.2.circlepath",
+                icon: .arrowsRotate,
                 tint: Palette.primary,
                 title: model.t(.autoCheckUpdates),
                 help: model.t(.autoCheckUpdatesHint),
@@ -463,7 +459,7 @@ struct UpdateSettingsCard: View {
             divider
 
             toggleRow(
-                icon: "arrow.down.circle",
+                icon: .download,
                 tint: Palette.secondary,
                 title: model.t(.autoInstallUpdates),
                 help: model.t(.autoInstallUpdatesHint),
@@ -490,7 +486,7 @@ struct UpdateSettingsCard: View {
     }
 
     private func toggleRow(
-        icon: String,
+        icon: ReiconAsset,
         tint: Color,
         title: String,
         help: String,
@@ -501,9 +497,7 @@ struct UpdateSettingsCard: View {
                 RoundedRectangle(cornerRadius: 7, style: .continuous)
                     .fill(Palette.surfaceMuted)
                     .frame(width: 24, height: 24)
-                Image(systemName: icon)
-                    .font(.system(size: 10.5, weight: .semibold))
-                    .foregroundStyle(tint)
+                ReiconIcon(asset: icon, size: 13, tint: tint)
             }
 
             Text(title)
@@ -683,9 +677,7 @@ struct PreferenceMenu: View {
 
                 Spacer(minLength: 0)
 
-                Image(systemName: "chevron.down")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(Palette.faint)
+                ReiconIcon(asset: .chevronDown, size: 12, tint: Palette.faint)
             }
             .padding(.horizontal, 9)
             .frame(maxWidth: .infinity)
@@ -841,7 +833,7 @@ struct CompactSwitchStyle: ToggleStyle {
 }
 
 struct SettingNumberRow: View {
-    let icon: String
+    let icon: ReiconAsset
     let title: String
     let tint: Color
     @Binding var value: Double
@@ -874,9 +866,7 @@ struct SettingNumberRow: View {
                     .fill(accent.opacity(0.10))
                     .frame(width: 24, height: 24)
 
-                Image(systemName: icon)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(accent)
+                ReiconIcon(asset: icon, size: 13, tint: accent)
             }
 
             Text(title)

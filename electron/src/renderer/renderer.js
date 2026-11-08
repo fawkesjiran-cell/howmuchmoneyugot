@@ -591,6 +591,12 @@ function renderChrome() {
   $('workdaysInput').setAttribute('aria-label', t('workdays'));
   $('hoursInput').setAttribute('aria-label', t('hours'));
   $('overtimeInput').setAttribute('aria-label', t('overtimeRate'));
+  $('ratesSection').setAttribute('aria-label', t('currentRates'));
+  $('actionsGrid').setAttribute('aria-label', t('timeClock'));
+  $('railSection').setAttribute('aria-label', t('sessionTimeline'));
+  $('languageSelect').setAttribute('aria-label', t('language'));
+  $('currencySelect').setAttribute('aria-label', t('currency'));
+  $('fireCanvas').setAttribute('aria-label', t('overtimeEarnings'));
   $('settingsView').hidden = currentView !== 'settings';
   $('mainView').hidden = currentView !== 'main';
   applyTheme();
@@ -1053,7 +1059,7 @@ async function init() {
   if (updatePreviewMode) {
     state.checkForUpdates = true;
     state.autoUpdate = false;
-    updateStatus = { state: 'available', version: '1.5.7', currentVersion: '1.5.6' };
+    updateStatus = { state: 'available', version: '1.6.0', currentVersion: '1.5.7' };
   }
   if (params.get('bigmac') === '1') state.bigMacCounter = true;
   if (params.get('salaryPreview') === '1') {

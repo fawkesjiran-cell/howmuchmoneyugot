@@ -16,11 +16,11 @@ enum ThemePreference: String, CaseIterable {
         }
     }
 
-    var symbolName: String {
+    var icon: ReiconAsset {
         switch self {
-        case .system: return "circle.lefthalf.filled"
-        case .light: return "sun.max"
-        case .dark: return "moon"
+        case .system: return .darkLight
+        case .light: return .sun
+        case .dark: return .moon
         }
     }
 

@@ -124,7 +124,7 @@ struct DashboardView: View {
 
             HStack(spacing: 4) {
                 HeaderIconButton(
-                    icon: model.theme.symbolName,
+                    icon: model.theme.icon,
                     isEnabled: true,
                     help: model.t(
                         .appearanceHelp,
@@ -136,7 +136,7 @@ struct DashboardView: View {
                 }
 
                 HeaderIconButton(
-                    icon: "arrow.counterclockwise",
+                    icon: .undoCircle,
                     isEnabled: model.session.hasRecordedTime,
                     help: model.t(.resetThisSession)
                 ) {
@@ -144,7 +144,7 @@ struct DashboardView: View {
                 }
 
                 HeaderIconButton(
-                    icon: "gearshape",
+                    icon: .gear,
                     isEnabled: true,
                     help: model.t(.settings)
                 ) {
@@ -394,7 +394,7 @@ struct DashboardView: View {
         HStack(spacing: 8) {
             ActionTile(
                 title: model.t(.actionInShort),
-                icon: "play.fill",
+                icon: .play,
                 style: clockInStyle,
                 isEnabled: model.canClockIn
             ) {
@@ -403,7 +403,7 @@ struct DashboardView: View {
 
             ActionTile(
                 title: model.t(.actionOutShort),
-                icon: "stop.fill",
+                icon: .stop,
                 style: model.canClockOut ? .solid : .ghost,
                 isEnabled: model.canClockOut
             ) {
@@ -412,7 +412,7 @@ struct DashboardView: View {
 
             ActionTile(
                 title: model.t(.startOvertime),
-                icon: "flame",
+                icon: .flame,
                 style: model.canStartOvertime ? .solid : .ghost,
                 isEnabled: model.canStartOvertime,
                 showsEmberHint: !model.canStartOvertime && snapshot.phase == .working
@@ -422,7 +422,7 @@ struct DashboardView: View {
 
             ActionTile(
                 title: model.t(.actionDoneShort),
-                icon: "checkmark",
+                icon: .check,
                 style: model.canEndOvertime ? .solid : .ghost,
                 isEnabled: model.canEndOvertime
             ) {
@@ -563,9 +563,7 @@ struct UpdatePromptMark: View {
                         .scaleEffect(0.62)
                         .tint(Palette.onPrimary)
                 } else {
-                    Image(systemName: "arrow.down")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundStyle(Palette.onPrimary)
+                    ReiconIcon(asset: .download, size: 13, tint: Palette.onPrimary)
                 }
 
                 Circle()
@@ -604,7 +602,7 @@ struct LogoMark: View {
 }
 
 struct HeaderIconButton: View {
-    let icon: String
+    let icon: ReiconAsset
     let isEnabled: Bool
     let help: String
     let action: () -> Void
@@ -613,19 +611,17 @@ struct HeaderIconButton: View {
 
     var body: some View {
         Button(action: action) {
-            Image(systemName: icon)
-                .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(
-                    isEnabled
-                        ? Palette.secondary
-                        : Palette.faint.opacity(0.45)
-                )
-                .frame(width: 28, height: 28)
-                .background(
-                    Circle()
-                        .fill(hovering && isEnabled ? Palette.surfaceMuted : Color.clear)
-                )
-                .contentShape(Circle())
+            ReiconIcon(
+                asset: icon,
+                size: 14,
+                tint: isEnabled ? Palette.secondary : Palette.faint.opacity(0.45)
+            )
+            .frame(width: 28, height: 28)
+            .background(
+                Circle()
+                    .fill(hovering && isEnabled ? Palette.surfaceMuted : Color.clear)
+            )
+            .contentShape(Circle())
         }
         .buttonStyle(.plain)
         .disabled(!isEnabled)
@@ -717,7 +713,7 @@ struct ActionTile: View {
     }
 
     let title: String
-    let icon: String
+    let icon: ReiconAsset
     let style: Style
     let isEnabled: Bool
     var showsEmberHint: Bool = false
@@ -772,9 +768,8 @@ struct ActionTile: View {
     var body: some View {
         Button(action: action) {
             VStack(spacing: 2) {
-                Image(systemName: icon)
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(iconColor)
+                ReiconIcon(asset: icon, size: 14, tint: iconColor)
+                    .padding(.vertical, -1)
 
                 Text(title)
                     .font(AppFont.geist(10, style == .ghost ? .medium : .semibold))

@@ -57,6 +57,8 @@ cp "$ROOT/Resources/Info.plist" "$APP/Contents/Info.plist"
 cp "$ROOT/Resources/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
 cp "$ROOT/Resources/FireTexture.png" "$APP/Contents/Resources/FireTexture.png"
 cp -R "$ROOT/Resources/Fonts" "$APP/Contents/Resources/Fonts"
+mkdir -p "$APP/Contents/Resources/Reicon"
+cp "$ROOT/Resources/Reicon/"*.pdf "$APP/Contents/Resources/Reicon/"
 cp "$ROOT/THIRD_PARTY_NOTICES.md" "$APP/Contents/Resources/THIRD_PARTY_NOTICES.md"
 printf 'APPL????' > "$APP/Contents/PkgInfo"
 

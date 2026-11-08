@@ -76,6 +76,7 @@ Windows Offline: `How-Much-Money-U-Got-Offline-Setup-<version>.exe`
 - Created by [fawkesjiran-cell](https://github.com/fawkesjiran-cell).
 - **Geist** typeface by [Vercel](https://github.com/vercel/geist-font), licensed under the SIL Open Font License 1.1.
 - **Vortex** particle system by [Paul Hudson](https://github.com/twostraws/Vortex), licensed under the MIT License.
+- **Reicon** icon library by [Dev Chauhan](https://github.com/dqev/reicon), licensed under the MIT License.
 - App icon artwork created for this project.
 - Windows builds use [Electron](https://www.electronjs.org) and Chromium; their licenses apply to those builds.
 

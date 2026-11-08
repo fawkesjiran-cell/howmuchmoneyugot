@@ -76,6 +76,7 @@ Windows 离线版：`How-Much-Money-U-Got-Offline-Setup-<version>.exe`
 - 由 [fawkesjiran-cell](https://github.com/fawkesjiran-cell) 制作。
 - **Geist** 字体由 [Vercel](https://github.com/vercel/geist-font) 提供，遵循 SIL Open Font License 1.1。
 - **Vortex** 粒子系统由 [Paul Hudson](https://github.com/twostraws/Vortex) 制作，遵循 MIT License。
+- **Reicon** 图标库由 [Dev Chauhan](https://github.com/dqev/reicon) 制作，遵循 MIT License。
 - 应用图标为项目定制的图形作品。
 - Windows 版本使用 [Electron](https://www.electronjs.org) 与 Chromium，相关许可证同样适用。
 
